@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Script Runner</title>
+</head>
+<body>
+  <div class="toolbar">
+    <span class="toolbar-title">Script Runner</span>
+    <button id="run-btn" class="btn btn-primary">▶ 运行</button>
+    <button id="clear-btn" class="btn btn-secondary">清除</button>
+  </div>
+
+  <div class="editor-container">
+    <div id="editor"></div>
+  </div>
+
+  <div class="console-container">
+    <div class="console-header">
+      <span class="console-title">控制台</span>
+    </div>
+    <div id="console-output" class="console-output">
+      <div class="console-empty">控制台暂无输出</div>
+    </div>
+  </div>
+
+  <script type="module" src="./sidepanel.ts"></script>
+</body>
+</html>
