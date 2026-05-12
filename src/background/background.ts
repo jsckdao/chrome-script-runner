@@ -1,8 +1,9 @@
 // 配置 side panel 行为：点击扩展图标时打开 side panel
 chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
 
+import { createBrowserApi } from '../libs/browser-api';
 // 导入 fengari-web (不包含 js interop，避免 eval)
-import { doString } from '../libs/fengari-web';
+import { executeLuaScript } from '../libs/fengari-web';
 
 // 内联 message.ts 工具函数
 type MessageType =
@@ -20,13 +21,28 @@ function onMessage(
   });
 }
 
+function wrapScript(script: string): string {
+  return `
+    ${script}
+
+    return coroutine.wrap(function()
+      return main()
+    end)()
+  `
+}
+
 onMessage((message, _, sendResponse) => {
   if (message.type === 'execute') {
     const { script, requestId } = message as Extract<MessageType, { type: 'execute' }>;
     console.log('Received execute request:', { script, requestId });
 
     try {
-      const result = doString(script);
+      const browserApi = createBrowserApi();
+      const result = executeLuaScript({
+        code: wrapScript(script),
+        apiName: 'browser',
+        apiObject: browserApi,
+      });
       sendResponse({
         type: 'executeResult',
         requestId,

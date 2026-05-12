@@ -952,38 +952,43 @@ const jsmt: Record<string, (L: LuaState) => number> = {
   }
 };
 
-const luaopen_js = function(L: LuaState): number {
-  /* Add weak map to track objects seen */
-  states.set(getmainthread(L), new Map());
+const create_luaopen_js = function(name: string, browserApi: any) {
+  return (L: LuaState) => {
+    /* Add weak map to track objects seen */
+    states.set(getmainthread(L), new Map());
 
-  lua_atnativeerror(L, atnativeerror);
+    lua_atnativeerror(L, atnativeerror);
 
-  luaL_newlib(L, jslib);
-  lua_pushliteral(L, FENGARI_INTEROP_VERSION);
-  lua_setfield(L, -2, "_VERSION");
-  lua_pushinteger(L, FENGARI_INTEROP_VERSION_NUM);
-  lua_setfield(L, -2, "_VERSION_NUM");
-  lua_pushliteral(L, FENGARI_INTEROP_RELEASE);
-  lua_setfield(L, -2, "_RELEASE");
+    luaL_newlib(L, jslib);
+    lua_pushliteral(L, FENGARI_INTEROP_VERSION);
+    lua_setfield(L, -2, "_VERSION");
+    lua_pushinteger(L, FENGARI_INTEROP_VERSION_NUM);
+    lua_setfield(L, -2, "_VERSION_NUM");
+    lua_pushliteral(L, FENGARI_INTEROP_RELEASE);
+    lua_setfield(L, -2, "_RELEASE");
 
-  luaL_newmetatable(L, js_tname as unknown as string);
-  luaL_setfuncs(L, jsmt, 0);
-  lua_pop(L, 1);
+    luaL_newmetatable(L, js_tname as unknown as string);
+    luaL_setfuncs(L, jsmt, 0);
+    lua_pop(L, 1);
 
-  pushjs(L, null);
-  /* Store null object in registry under lightuserdata null */
-  lua_pushvalue(L, -1);
-  lua_rawsetp(L, LUA_REGISTRYINDEX, null);
-  lua_setfield(L, -2, "null");
+    pushjs(L, null);
+    /* Store null object in registry under lightuserdata null */
+    lua_pushvalue(L, -1);
+    lua_rawsetp(L, LUA_REGISTRYINDEX, null);
+    lua_setfield(L, -2, "null");
 
-  push(L, global_env);
-  lua_setfield(L, -2, "global");
+    push(L, browserApi);
+    lua_setfield(L, -2, name);
 
-  return 1;
-};
+    return 1;
+  }
+}
+
+const luaopen_js = create_luaopen_js('global', global_env);
 
 // Export functions
 export {
+  create_luaopen_js,
   luaopen_js,
   checkjs,
   testjs,

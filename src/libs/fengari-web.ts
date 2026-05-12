@@ -17,23 +17,18 @@ import {
   to_luastring
 } from 'fengari';
 
-import { luaopen_js, push, tojs } from './fengari-interop';
+import { create_luaopen_js, push, tojs } from './fengari-interop';
+import type { BrowserApi } from './browser-api/base';
 
 const LUA_ERRSYNTAX = lua.LUA_ERRSYNTAX;
 const LUA_OK = lua.LUA_OK;
 
-// Lua state
-const L = lauxlib.luaL_newstate();
 
-/* open standard libraries */
-lualib.luaL_openlibs(L);
-
-/* open js interop library */
-lauxlib.luaL_requiref(L, "js", luaopen_js, 1);
-lua.lua_pop(L, 1); /* remove lib */
-
-lua.lua_pushstring(L, FENGARI_COPYRIGHT);
-lua.lua_setglobal(L, "_COPYRIGHT");
+export interface ExecuteLuaScriptParams {
+  code: string;
+  apiName: string;
+  apiObject: BrowserApi;
+}
 
 /**
  * Execute a Lua string using lua_pcall
@@ -41,7 +36,22 @@ lua.lua_setglobal(L, "_COPYRIGHT");
  * @param code - Lua source code string
  * @returns The result of execution
  */
-export function doString(code: string): unknown {
+export function executeLuaScript({ code, apiName, apiObject }: ExecuteLuaScriptParams): unknown {
+  // Lua state
+  const L = lauxlib.luaL_newstate();
+
+  /* open standard libraries */
+  lualib.luaL_openlibs(L);
+
+  const luaopen_js = create_luaopen_js(apiName, apiObject);
+
+  /* open js interop library */
+  lauxlib.luaL_requiref(L, "js", luaopen_js, 1);
+  lua.lua_pop(L, 1); /* remove lib */
+
+  lua.lua_pushstring(L, FENGARI_COPYRIGHT);
+  lua.lua_setglobal(L, "_COPYRIGHT");
+
   const luaCode = to_luastring(code);
   // fengari 的 luaL_loadstring 实际接受 Uint8Array (luastring)，类型声明有误
   const ok = lauxlib.luaL_loadstring(L, luaCode as unknown as string);
