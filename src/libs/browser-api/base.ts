@@ -1,4 +1,4 @@
-import { z, ZodTypeAny, ZodObject, ZodAny } from 'zod';
+import { z, ZodTypeAny, ZodObject, ZodAny, ZodTuple } from 'zod';
 
 /**
  * Async function definition with Zod schema validation
@@ -40,7 +40,7 @@ export type BrowserApi = Record<string, FunctionDef>;
  *   }
  * })
  */
-export function defineAsyncFunction<T extends ZodAny>(
+export function defineAsyncFunction<T extends ZodTuple>(
   def: {
     name: string;
     description: string;
@@ -63,7 +63,7 @@ export function defineAsyncFunction<T extends ZodAny>(
  * @param def 
  * @returns 
  */
-export function defineSyncFunction<T extends ZodAny>(
+export function defineSyncFunction<T extends ZodTuple>(
   def: {
     name: string;
     description: string;
@@ -84,20 +84,21 @@ export function defineSyncFunction<T extends ZodAny>(
 /**
  * Extract parameter descriptions from Zod schema for code completion.
  */
-export function getParamDescriptions<T extends ZodObject<any>>(
+export function getParamDescriptions<T extends ZodTuple<any>>(
   schema: T
 ): Record<string, { type: string; description: string; required: boolean }> {
   const shape = schema.shape;
   const result: Record<string, { type: string; description: string; required: boolean }> = {};
 
-  for (const [key, field] of Object.entries(shape)) {
+  // 元组的 shape 是数组，用索引作为 key
+  shape.forEach((field, index) => {
     const zodField = field as any;
-    result[key] = {
+    result[String(index)] = {
       type: zodField._def?.typeName || 'unknown',
       description: zodField.description || '',
       required: !zodField.isOptional?.()
     };
-  }
+  });
 
   return result;
 }
@@ -105,7 +106,7 @@ export function getParamDescriptions<T extends ZodObject<any>>(
 /**
  * Convert AsyncFunctionDef to completion info for editor integration.
  */
-export function toCompletionInfo<T extends ZodObject<any>>(
+export function toCompletionInfo<T extends ZodTuple<any>>(
   def: AsyncFunctionDef<T>
 ): {
   name: string;
@@ -118,8 +119,8 @@ export function toCompletionInfo<T extends ZodObject<any>>(
   return {
     name: def.name,
     description: def.description,
-    params: Object.entries(paramDescriptions).map(([name, info]) => ({
-      name,
+    params: Object.entries(paramDescriptions).map(([index, info]) => ({
+      name: `arg${index}`,
       type: info.type,
       description: info.description,
       required: info.required

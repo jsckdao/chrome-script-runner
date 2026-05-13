@@ -1,7 +1,7 @@
 export type MessageType =
   | { type: 'execute'; script: string; requestId: string; tabId: number }
   | { type: 'executeResult'; requestId: string; result: unknown; error?: string }
-  | { type: 'console'; requestId: string; level: 'log' | 'error' | 'warn' | 'info'; args: unknown[] };
+  | { type: 'executeLog'; requestId: string; level: 'log' | 'error' | 'warn' | 'info'; message: string };
 
 export function sendMessage(message: MessageType): Promise<unknown> {
   return new Promise((resolve, reject) => {

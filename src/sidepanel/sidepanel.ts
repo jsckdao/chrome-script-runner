@@ -9,6 +9,7 @@ class SidePanel {
   private runBtn: HTMLButtonElement;
   private clearBtn: HTMLButtonElement;
   private currentTabId: number | null = null;
+  private currentRequestId: string | null = null;
 
   constructor() {
     this.initUI();
@@ -48,20 +49,14 @@ class SidePanel {
   }
 
   private setupMessageHandler(): void {
-    // onMessage((message) => {
-    //   if (message.type === 'console') {
-    //     const { level, args } = message as { type: 'console'; level: 'log' | 'error' | 'warn' | 'info'; args: unknown[] };
-    //     this.console[level](...args);
-    //   } else if (message.type === 'executeResult') {
-    //     const { result, error } = message as { type: 'executeResult'; result: unknown; error?: string };
-    //     if (error) {
-    //       this.console.error('Error:', error);
-    //     } else if (result !== undefined) {
-    //       this.console.result(result);
-    //     }
-    //     this.runBtn.disabled = false;
-    //   }
-    // });
+    onMessage((message) => {
+      if (message.requestId === this.currentRequestId) {
+        if (message.type === 'executeLog') {
+          const { level, message: msg } = message;
+          this.console[level](msg);
+        }
+      }
+    });
   }
 
   private async getCurrentTab(): Promise<void> {
@@ -91,6 +86,7 @@ class SidePanel {
     this.console.info('--- 开始执行 ---');
 
     const requestId = crypto.randomUUID();
+    this.currentRequestId = requestId;
 
     try {
       const result: any = await sendMessage({

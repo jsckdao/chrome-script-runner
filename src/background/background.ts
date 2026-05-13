@@ -3,7 +3,8 @@ chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
 
 import { createBrowserApi } from '../libs/browser-api';
 // 导入 fengari-web (不包含 js interop，避免 eval)
-import { executeLuaScript } from '../libs/fengari-web';
+import { executeAsyncUntilDone } from '../libs/async-executor';
+import { BrowserApi } from '../libs/browser-api/base';
 
 // 内联 message.ts 工具函数
 type MessageType =
@@ -21,27 +22,36 @@ function onMessage(
   });
 }
 
-function wrapScript(script: string): string {
-  return `
-    ${script}
-
-    return coroutine.wrap(function()
-      return main()
-    end)()
-  `
+function wrapBrowserApi(api: BrowserApi) {
+  const res: Record<string, Function> = {};
+  Object.keys(api).forEach((k) => {
+    const v = api[k];
+    res[k] = async (...args: any[]) => {
+      await v.execute(args);
+    }
+  });
+  return res;
 }
 
-onMessage((message, _, sendResponse) => {
+
+onMessage(async (message, _, sendResponse) => {
   if (message.type === 'execute') {
     const { script, requestId } = message as Extract<MessageType, { type: 'execute' }>;
     console.log('Received execute request:', { script, requestId });
 
     try {
-      const browserApi = createBrowserApi();
-      const result = executeLuaScript({
-        code: wrapScript(script),
-        apiName: 'browser',
+      const browserApi = wrapBrowserApi(createBrowserApi());
+      const result = await executeAsyncUntilDone({
+        code: script,
         apiObject: browserApi,
+        log: (level, msg) => {
+          chrome.runtime.sendMessage({
+            type: 'executeLog',
+            requestId,
+            level,
+            message: msg,
+          });
+        }
       });
       sendResponse({
         type: 'executeResult',

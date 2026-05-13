@@ -11,7 +11,7 @@ describe('async-executor - basic Lua execution', () => {
      end
     `;
 
-    const result = await executeAsyncUntilDone({ code, apiObject: api, apiName: 'ddd' });
+    const result = await executeAsyncUntilDone({ code, apiObject: api,  });
     expect(result).toBe(42)
   });
 
@@ -25,7 +25,7 @@ describe('async-executor - basic Lua execution', () => {
     end
     `;
 
-    const result = await executeAsyncUntilDone({ code, apiObject: api, apiName: 'ddd' });
+    const result = await executeAsyncUntilDone({ code, apiObject: api,  });
     expect(result).toBe(30)
   });
 
@@ -36,7 +36,7 @@ describe('async-executor - basic Lua execution', () => {
       return { x = 1, y = 2 }
     end`;
 
-    const result = await executeAsyncUntilDone({ code, apiObject: api, apiName: 'ddd' });
+    const result = await executeAsyncUntilDone({ code, apiObject: api,  });
     expect(result).toEqual({ x: 1, y: 2 });
   });
 });
@@ -55,12 +55,12 @@ describe('async-executor - simple async function', () => {
     };
     const code = `
       function main()
-        local r = yield_call('test_yield', { name = 'test' })
+        local r = yield_call('test_yield', {{ name = 'test' }})
         return r
       end
     `;
 
-    const promise = executeAsyncUntilDone({ code, apiObject: api, apiName: 'ddd' });
+    const promise = executeAsyncUntilDone({ code, apiObject: api,  });
 
     // Wait for the async operation
     await vi.advanceTimersByTimeAsync(10);
@@ -82,13 +82,13 @@ describe('async-executor - simple async function', () => {
     };
     const code = `
       function main()
-        local r1 = yield_call('test_yield', { step = 1 })
-        local r2 = yield_call('test_yield', { step = 2 })
+        local r1 = yield_call('test_yield', {{ step = 1 }})
+        local r2 = yield_call('test_yield', {{ step = 2 }})
         return { r1 = r1, r2 = r2 }
       end
     `;
 
-    const promise = executeAsyncUntilDone({ code, apiObject: api, apiName: 'ddd' });
+    const promise = executeAsyncUntilDone({ code, apiObject: api,  });
 
     // Wait for the async operations
     await vi.advanceTimersByTimeAsync(10);
@@ -116,13 +116,38 @@ describe('async-executor lib test', () => {
         return "done"
       end
     `;
-    const promise = executeAsyncUntilDone({ code, apiObject: api, apiName: 'ddd', log });
+    const promise = executeAsyncUntilDone({ code, apiObject: api, log });
     // Wait for the async operations
     await vi.advanceTimersByTimeAsync(10)
     const result = await promise;
-    expect(log).toHaveBeenCalledWith('info', 'This is an info message');
-    expect(log).toHaveBeenCalledWith('warn', 'This is a warning');
-    expect(log).toHaveBeenCalledWith('error', 'This is an error');
+    expect(log).toHaveBeenCalledWith('INFO', 'This is an info message');
+    expect(log).toHaveBeenCalledWith('WARN', 'This is a warning');
+    expect(log).toHaveBeenCalledWith('ERROR', 'This is an error');
     expect(result).toBe('done');
   })
+
+  it('browser api test', async () => {
+
+    const browserApi = {
+      calcAdd: vi.fn(async (a: number, b: number) => {
+        console.log('calcAdd called with:', a, b);
+        return a + b;
+      }),
+    }
+
+    const code = `
+      function main()
+        return browser.calcAdd(5, 7)
+      end
+    `
+
+    const promise = executeAsyncUntilDone({ code, apiObject: browserApi,  });
+    
+    // Wait for the async operations
+    await vi.advanceTimersByTimeAsync(10);
+    
+    const result = await promise;
+    expect(browserApi.calcAdd).toHaveBeenCalledWith(5, 7);
+    expect(result).toBe(12);
+  });
 });

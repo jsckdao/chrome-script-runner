@@ -1,7 +1,7 @@
 "use strict";
 
 import { lua, lauxlib, lualib, to_luastring, to_jsstring, lua_State } from 'fengari';
-import { tojs, push, create_luaopen_js, tojsCompletely, pushjs } from './fengari-interop';
+import { tojs, push, create_luaopen_js, tojsCompletely } from './fengari-interop';
 
 const LUA_OK = lua.LUA_OK;
 const LUA_YIELD = lua.LUA_YIELD;
@@ -11,13 +11,12 @@ export type ResumeResult = {
   done: boolean; 
   value?: unknown; 
   key?: string | undefined; 
-  args?: unknown; 
+  args?: any[]; 
   error?: Error;
 }
 
 export type ExecuteParams = {
   code: string;
-  apiName: string;
   apiObject: Record<string, Function>;
   log?: (level: string, message: string) => void;
 }
@@ -33,7 +32,7 @@ export type ExecuteParams = {
 export function executeAsync(params: ExecuteParams): {
   resume: (result?: unknown) => ResumeResult;
 } {
-  const { code, apiName, apiObject, log } = params;
+  const { code, apiObject, log } = params;
   // Store api in closure for resume function
   const apiObj = apiObject;
 
@@ -44,9 +43,24 @@ export function executeAsync(params: ExecuteParams): {
   lualib.luaL_openlibs(L);
 
   // Open js interop library with our API
-  const luaopen_js = create_luaopen_js({
-    __print: (level: string, message: string) => {
-      if (log) log(level, message);
+  const { luaopen_js, luaopen_cleanup } = create_luaopen_js({
+    // This function will be called from Lua to print logs, forwarding to provided log function
+    __print: (L: lua_State) => {
+      const level = lua.lua_tojsstring(L, 1);
+      const msg = lua.lua_tojsstring(L, 2);
+      if (log) log(level, msg);
+      push(L, null);
+      return 1;
+    },
+
+    __get_browser_api: (L: lua_State) => {
+      const apiKeys = Object.keys(apiObj);
+      lua.lua_createtable(L, apiKeys.length, 0); 
+      for (let k = 0; k < apiKeys.length; k++) {
+        lua.lua_pushstring(L, apiKeys[k]);
+        lua.lua_rawseti(L, -2, k + 1);
+      }
+      return 1;
     }
   });
   lauxlib.luaL_requiref(L, to_luastring("js") as unknown as string, luaopen_js, 1);
@@ -63,7 +77,10 @@ export function executeAsync(params: ExecuteParams): {
     lua.lua_pop(L, 1);
     return {
       resume: () => {
-        throw new Error(`Load error: ${err}`);
+        lauxlib.luaL_traceback(L, L, '', 0);                                             
+        const tracebackStr = to_jsstring(lua.lua_tostring(L, -1));                                           ;  
+        lua.lua_pop(L, 1);
+        throw new Error(`Scripts Load error: ${err} \n ${tracebackStr}`);
       }
     };
   }
@@ -76,6 +93,30 @@ export function executeAsync(params: ExecuteParams): {
     throw Error('Lua code must define a main() function');
   }
 
+  let isDone = false;
+
+  const cleanup = () => {
+    luaopen_cleanup();
+  }
+
+  const doneWithError = (err: Error): ResumeResult => {
+    isDone = true
+    cleanup();
+    return {
+      done: true,
+      error: err
+    }
+  }
+
+  const doneWithResult = (result: unknown): ResumeResult => {
+    isDone = true;
+    cleanup();
+    return {
+      done: true,
+      value: result
+    }
+  }
+
   // Return controller object
   return {
     /**
@@ -83,6 +124,10 @@ export function executeAsync(params: ExecuteParams): {
      * @param result The result from JavaScript async function (or undefined for first resume)
      */
     resume: (result?: unknown): ResumeResult => {
+      if (isDone) {
+        throw new Error('Coroutine is already done');
+      }
+
       // Push result onto stack if provided
       if (result !== undefined) {
         push(co, result);
@@ -106,17 +151,22 @@ export function executeAsync(params: ExecuteParams): {
           lua.lua_pop(co, 1);
         }
 
+        args = tojsCompletely(args)
+
         if (typeof key !== 'string') {
-          return {
-            done: true,
-            error: new Error('Yielded key must be a string')
-          };
+          return doneWithError(new Error('Yielded key must be a string'));
+        }
+
+        console.log('args', args)
+
+        if (!Array.isArray(args)) {
+          return doneWithError(new Error('Yielded value must be an array of arguments'));
         }
 
         return {
           done: false,
           key,
-          args: tojsCompletely(args),
+          args,
         };
       } else if (resumeStatus === lua.LUA_OK) {
         // Coroutine finished - get return value
@@ -124,41 +174,23 @@ export function executeAsync(params: ExecuteParams): {
         const value = top > 0 ? tojs(co, 1) : undefined;
         if (top > 0) lua.lua_pop(co, 1);
 
-        return {
-          done: true,
-          value: tojsCompletely(value)
-        };
+        return doneWithResult(tojsCompletely(value));
       } else if (resumeStatus === lua.LUA_ERRSYNTAX) {
-        return {
-          done: true,
-          error: new SyntaxError(`Syntax error: ${to_jsstring(lua.lua_tostring(co, -1))}`)
-        }
+        return doneWithError(new SyntaxError(`Syntax error: ${to_jsstring(lua.lua_tostring(co, -1))}`)); 
       } else if (resumeStatus === lua.LUA_ERRMEM) {
-        return {
-          done: true,
-          error: new Error('Memory error')
-        }
+        return doneWithError(new Error('Memory error'));
       }
       else if (resumeStatus === lua.LUA_ERRERR) {
-        return {
-          done: true,
-          error: new Error(`Error during execution: ${to_jsstring(lua.lua_tostring(co, -1))}`)
-        }
+        return doneWithError(new Error(`Error during execution: ${to_jsstring(lua.lua_tostring(co, -1))}`));
       }
       else if (resumeStatus === lua.LUA_ERRRUN) {
-        return {
-          done: true,
-          error: new Error(`Runtime error: ${to_jsstring(lua.lua_tostring(co, -1))}`)
-        };
+        return doneWithError(new Error(`Runtime error: ${to_jsstring(lua.lua_tostring(co, -1))}`));
       }
       else {
         // Error
         const err = tojs(co, -1);
         lua.lua_pop(co, 1);
-        return {
-          done: true,
-          error: err instanceof Error ? err : new Error(String(err))
-        };
+        return doneWithError(err instanceof Error ? err : new Error(String(err)));
       }
     }
   };
@@ -187,7 +219,7 @@ export async function executeAsyncUntilDone(params: ExecuteParams): Promise<unkn
     if (key) {
       const fn = params.apiObject[key];
       if (fn) { 
-        call_result = await fn(args)
+        call_result = await fn(...args)
       }
     } else {
       throw new Error('Unexpected yield')
@@ -206,11 +238,31 @@ function yield_call(key, args)
 end
 
 log = {
-  info = function(msg) __print("INFO", msg) end,
-  warn = function(msg) __print("WARN", msg) end,
-  error = function(msg) __print("ERROR", msg) end,
-  debug = function(msg) __print("DEBUG", msg) end,
+  info = function(msg) js.__print("INFO", msg) end,
+  warn = function(msg) js.__print("WARN", msg) end,
+  error = function(msg) js.__print("ERROR", msg) end,
+  debug = function(msg) js.__print("DEBUG", msg) end,
 }
+
+function string:split(sep)
+  local res = {}
+  for v in string.gmatch(self, "[^"..sep.."]+") do
+    table.insert(res, v)
+  end
+  return res
+end
+
+function string:trim()
+  return string.gsub(self, "^%s+%s+$", "")
+end
+
+browser = {}
+
+for _, v in ipairs(js.__get_browser_api()) do
+  browser[v] = function(...)
+    return yield_call(v, {...})
+  end
+end
 
 `;
 }

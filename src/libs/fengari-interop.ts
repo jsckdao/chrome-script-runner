@@ -300,9 +300,17 @@ const tojsCompletely = function(obj: any): any {
       if (proxyObj.type === LUA_TTABLE) {
         const res: any = {};
         for (const [k, v] of proxyObj) {
-          res[k] = tojsCompletely(v);
+          const v2 = tojsCompletely(v);
+          res[k] = v2;
         }
-        return res;
+
+        // 判断是否可以转化为数组
+        const keys = Object.keys(res);
+        const sortedKeys = keys.map((v: string) => parseInt(v, 10)).sort((a, b) => a - b);
+        let isArray = keys.every((v: string) => /^\d+$/.test(v)) &&
+          (sortedKeys.join(',') === Array(keys.length).fill(0).map((_, i) => i + 1).join(','));
+
+        return isArray ? sortedKeys.map((k) => res[k]) : res;
       } else if (proxyObj.type === LUA_TFUNCTION) {
         return (args: unknown[]) => {
           return proxyObj.apply(null, args);
@@ -1006,9 +1014,11 @@ const jsmt: Record<string, (L: LuaState) => number> = {
 };
 
 const create_luaopen_js = function(browserApi: any) {
-  return (L: LuaState) => {
+  let mainthread = null as unknown | null;
+  const luaopen_js = (L: LuaState) => {
     /* Add weak map to track objects seen */
-    states.set(getmainthread(L), new Map());
+    mainthread = getmainthread(L)
+    states.set(mainthread, new Map());
 
     lua_atnativeerror(L, atnativeerror);
 
@@ -1035,14 +1045,19 @@ const create_luaopen_js = function(browserApi: any) {
 
     return 1;
   }
-}
 
-const luaopen_js = create_luaopen_js('global', global_env);
+  const luaopen_cleanup = () => {
+    if (mainthread) {
+      states.delete(mainthread as LuaState);
+    }
+  };
+
+  return { luaopen_js, luaopen_cleanup };
+}
 
 // Export functions
 export {
   create_luaopen_js,
-  luaopen_js,
   checkjs,
   testjs,
   pushjs,

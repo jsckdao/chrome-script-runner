@@ -79,6 +79,9 @@ declare module 'fengari' {
     // 推入轻量用户数据（指针）
     lua_pushlightuserdata(L: lua_State, p: unknown): void;
 
+    // ========== 创建表 ==========
+    lua_createtable(L: lua_State, n: number, k: number): void;
+
     // ========== 从栈读取值 ==========
     // 获取全局表中的值
     lua_gettable(L: lua_State, idx: number): number;
@@ -93,6 +96,10 @@ declare module 'fengari' {
     // 从表中获取原始值（通过指针 key）
     lua_rawgetp(L: lua_State, idx: number, p: unknown): number;
     // 再次获取栈顶元素数量（重复定义）
+    lua_rawseti(L: lua_State, idx: number, n: number): void;
+    // 从表中设置原始值（通过指针 key）
+    lua_rawsetp(L: lua_State, idx: number, p: unknown): void;
+    // 获取元表
     lua_gettop(L: lua_State): number;
     // 判断是否为表
     lua_istable(L: lua_State, idx: number): boolean;
@@ -228,6 +235,9 @@ declare module 'fengari' {
     luaL_testudata(L: lua_State, n: number, tname: string): unknown;
     // 获取对象的字符串表示
     luaL_tolstring(L: lua_State, idx: number): Uint8Array;
+
+
+    luaL_traceback(L: lua_State, L1: lua_State, msg: string | null, level: number): void;
   };
 
   export const lualib: {
