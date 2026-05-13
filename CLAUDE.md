@@ -215,6 +215,10 @@ local result = browser.myApi("hello", 123)
 local flag = browser.syncApi(true)
 ```
 
+#### 4. 本地单元测试
+
+所有对 api 方法的测试用例写在 `src/libs/browser-api/test` 文件中。
+
 ### 参数 schema 说明
 
 | Zod 类型 | Lua 类型 | 说明 |
@@ -231,3 +235,7 @@ local flag = browser.syncApi(true)
 ## 构建配置
 
 Vite 从 `src/` 根目录构建，使用自定义插件复制 `manifest.json` 到 `dist/`。输出使用 `[name]/[name].js` 模式以符合 Chrome 要求。
+
+
+## 开发注意事项
+- 所有代码文件的命名采用中划线”-“对单词进行分隔。
