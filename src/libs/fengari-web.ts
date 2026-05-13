@@ -22,6 +22,7 @@ import type { BrowserApi } from './browser-api/base';
 
 const LUA_ERRSYNTAX = lua.LUA_ERRSYNTAX;
 const LUA_OK = lua.LUA_OK;
+const LUA_YIELD = lua.LUA_YIELD;
 
 
 export interface ExecuteLuaScriptParams {
@@ -30,13 +31,17 @@ export interface ExecuteLuaScriptParams {
   apiObject: BrowserApi;
 }
 
+export interface ExecuteLuaScriptResult {
+
+}
+
 /**
  * Execute a Lua string using lua_pcall
  * Note: Requires a browser environment (or Node.js with proper fengari setup)
  * @param code - Lua source code string
  * @returns The result of execution
  */
-export function executeLuaScript({ code, apiName, apiObject }: ExecuteLuaScriptParams): unknown {
+export async function executeLuaScript({ code, apiName, apiObject }: ExecuteLuaScriptParams): Promise<ExecuteLuaScriptResult> {
   // Lua state
   const L = lauxlib.luaL_newstate();
 

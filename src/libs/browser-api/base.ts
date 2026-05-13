@@ -1,4 +1,4 @@
-import { z, ZodTypeAny, ZodObject } from 'zod';
+import { z, ZodTypeAny, ZodObject, ZodAny } from 'zod';
 
 /**
  * Async function definition with Zod schema validation
@@ -40,7 +40,7 @@ export type BrowserApi = Record<string, FunctionDef>;
  *   }
  * })
  */
-export function defineAsyncFunction<T extends ZodObject<any>>(
+export function defineAsyncFunction<T extends ZodAny>(
   def: {
     name: string;
     description: string;
@@ -63,7 +63,7 @@ export function defineAsyncFunction<T extends ZodObject<any>>(
  * @param def 
  * @returns 
  */
-export function defineSyncFunction<T extends ZodObject<any>>(
+export function defineSyncFunction<T extends ZodAny>(
   def: {
     name: string;
     description: string;

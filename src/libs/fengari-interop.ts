@@ -245,7 +245,8 @@ const atnativeerror = function(L: LuaState): number {
 };
 
 const tojs = function(L: LuaState, idx: number): unknown {
-  switch (lua_type(L, idx)) {
+  const type = lua_type(L, idx)
+  switch (type) {
     case LUA_TNONE:
     case LUA_TNIL:
       return undefined;
@@ -267,8 +268,54 @@ const tojs = function(L: LuaState, idx: number): unknown {
     case LUA_TTHREAD:
     /* falls through */
     default:
-      return wrap(L, lua_toproxy(L, idx));
+      return wrap(L, lua_toproxy(L, idx), type);
   }
+};
+
+const tojsCompletely = function(obj: any): any {
+  if (obj === null || 
+    obj === undefined || 
+    typeof obj === 'string' || 
+    typeof obj === 'number' ||
+    typeof obj === 'boolean' ||
+    typeof obj === 'symbol' ||
+    typeof obj === 'bigint') {
+    return obj;
+  }
+  else if (Array.isArray(obj)) {
+    return obj.map(tojsCompletely);
+  }
+  else if (typeof obj === 'object') {
+    const res: any = {};
+    Object.keys(obj).forEach(key => {
+      res[key] = tojsCompletely(obj[key]);
+    })
+    return res;
+  }
+  else if (typeof obj === 'function') {
+    // 如果是一个 proxy, 可能是 lua 的 table 或 function， 需要特殊处理
+    if (obj.isProxy === true) {
+      const proxyObj = obj as ProxyFunction;
+      // 如果是table，转化为普通object
+      if (proxyObj.type === LUA_TTABLE) {
+        const res: any = {};
+        for (const [k, v] of proxyObj) {
+          res[k] = tojsCompletely(v);
+        }
+        return res;
+      } else if (proxyObj.type === LUA_TFUNCTION) {
+        return (args: unknown[]) => {
+          return proxyObj.apply(null, args);
+        }
+      } 
+    }
+    else {
+      return obj;
+    }
+  }
+
+  // 其他类型暂时没啥意义
+  return {};
 };
 
 /* Calls function on the stack with `nargs` from the stack.
@@ -479,7 +526,7 @@ const jsiterator = function(L: LuaState, p: (L: LuaState) => void): IteratorStat
 };
 
 // Proxy function type
-interface ProxyFunction {
+export interface ProxyFunction {
   (): unknown;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   apply: (thisArg: unknown, args: any[]) => unknown;
@@ -489,6 +536,8 @@ interface ProxyFunction {
   has: (k: unknown) => boolean;
   set: (k: unknown, v: unknown) => void;
   delete: (k: unknown) => void;
+  type: number;
+  isProxy: boolean;
   toString: () => string;
   [Symbol.toStringTag]: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -499,7 +548,7 @@ interface ProxyFunction {
   [key: symbol]: any;
 }
 
-const wrap = function(L1: LuaState, p: (L: LuaState) => void): ProxyFunction {
+const wrap = function(L1: LuaState, p: (L: LuaState) => void, type: number): ProxyFunction {
   const L = getmainthread(L1);
   /* we need `typeof js_proxy` to be "function" so that it's acceptable to native apis */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -508,6 +557,10 @@ const wrap = function(L1: LuaState, p: (L: LuaState) => void): ProxyFunction {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return invoke(L, p, this, arguments as any, 1)[0];
   } as ProxyFunction;
+
+  js_proxy.isProxy = true;
+
+  js_proxy.type = type;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   js_proxy.apply = function(thisArg: unknown, args: any[]): unknown {
@@ -952,14 +1005,17 @@ const jsmt: Record<string, (L: LuaState) => number> = {
   }
 };
 
-const create_luaopen_js = function(name: string, browserApi: any) {
+const create_luaopen_js = function(browserApi: any) {
   return (L: LuaState) => {
     /* Add weak map to track objects seen */
     states.set(getmainthread(L), new Map());
 
     lua_atnativeerror(L, atnativeerror);
 
-    luaL_newlib(L, jslib);
+    luaL_newlib(L, {
+      ...browserApi,
+      ...jslib,
+    });
     lua_pushliteral(L, FENGARI_INTEROP_VERSION);
     lua_setfield(L, -2, "_VERSION");
     lua_pushinteger(L, FENGARI_INTEROP_VERSION_NUM);
@@ -977,9 +1033,6 @@ const create_luaopen_js = function(name: string, browserApi: any) {
     lua_rawsetp(L, LUA_REGISTRYINDEX, null);
     lua_setfield(L, -2, "null");
 
-    push(L, browserApi);
-    lua_setfield(L, -2, name);
-
     return 1;
   }
 }
@@ -995,6 +1048,7 @@ export {
   pushjs,
   push,
   tojs,
+  tojsCompletely,
   FENGARI_INTEROP_VERSION,
   FENGARI_INTEROP_VERSION_NUM,
   FENGARI_INTEROP_RELEASE,
