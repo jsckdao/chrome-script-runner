@@ -264,3 +264,49 @@ body {
 .cm-content.cm-focused {
   outline: none !important;
 }
+
+/* CodeMirror 自动补全弹层 - 黑暗模式 */
+.cm-tooltip {
+  background: #252526 !important;
+  border: 1px solid #3c3c3c !important;
+  border-radius: 4px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+}
+
+.cm-tooltip-autocomplete {
+  background: #252526 !important;
+}
+
+.cm-tooltip-autocomplete > ul {
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace !important;
+  font-size: 13px !important;
+}
+
+.cm-tooltip-autocomplete > ul > li {
+  padding: 4px 8px !important;
+  color: #d4d4d4 !important;
+}
+
+.cm-tooltip-autocomplete > ul > li[aria-selected] {
+  background: #094771 !important;
+  color: #ffffff !important;
+}
+
+.cm-completionLabel {
+  color: #d4d4d4 !important;
+}
+
+.cm-completionDetail {
+  color: #858585 !important;
+  font-style: italic !important;
+  margin-left: 8px !important;
+}
+
+.cm-completionMatchedText {
+  color: #569cd6 !important;
+  font-weight: 500 !important;
+}
+
+.cm-tooltip.cm-tooltip-hover > .cm-tooltip-content {
+  color: #d4d4d4 !important;
+}
