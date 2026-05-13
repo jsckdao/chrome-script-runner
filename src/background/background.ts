@@ -30,7 +30,7 @@ function wrapBrowserApi(api: BrowserApi) {
     const v = api[k];
     res[k] = async (...args: any[]) => {
       args = v.params.parse(args);
-      await v.execute(args);
+      return await v.execute(args);
     }
   });
   return res;

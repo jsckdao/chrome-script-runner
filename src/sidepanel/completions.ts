@@ -1,4 +1,5 @@
 import { Completion, CompletionContext, CompletionResult } from '@codemirror/autocomplete';
+import { portManager } from './port-manager';
 
 const defaultCompletions: Completion[] = [
   // Lua 关键字
@@ -83,28 +84,29 @@ const defaultCompletions: Completion[] = [
 
 // 缓存补全结果
 let cachedCompletions: Completion[] | null = null;
-let completionsPort: chrome.runtime.Port | null = null;
+let cachedCompletionsLoaded = false;
 
-// 建立 port 连接
-function getCompletionsPort(): chrome.runtime.Port {
-  if (!completionsPort) {
-    completionsPort = chrome.runtime.connect({ name: 'sidepanel-to-background' });
-    completionsPort.onMessage.addListener((message) => {
-      if (message.type === 'completionsResponse' && cachedCompletions === null) {
-        cachedCompletions = message.completions || [];
-      }
-    });
-  }
-  return completionsPort;
-}
-
-// 从 background 请求补全信息
+// 请求补全数据
 function fetchCompletions(): void {
-  const requestId = crypto.randomUUID();
-  getCompletionsPort().postMessage({ type: 'getCompletions', requestId });
+  if (!portManager.isConnected()) return;
+
+  const sent = portManager.postMessage({ type: 'getCompletions', requestId: crypto.randomUUID() });
+  if (!sent) {
+    // 连接未就绪，延迟重试
+    setTimeout(fetchCompletions, 1000);
+  }
 }
 
-// 初始化时请求补全
+// 使用 portManager 的消息监听
+portManager.onMessage((message) => {
+  if (message.type === 'completionsResponse') {
+    cachedCompletions = message.completions || [];
+    cachedCompletionsLoaded = true;
+  }
+});
+
+// 初始化连接和请求补全
+portManager.connect();
 fetchCompletions();
 
 export async function chromeAPICompletions(context: CompletionContext): Promise<CompletionResult | null> {
@@ -114,7 +116,7 @@ export async function chromeAPICompletions(context: CompletionContext): Promise<
   }
 
   // 如果还没收到响应，等待一下
-  if (!cachedCompletions) {
+  if (!cachedCompletionsLoaded) {
     await new Promise(resolve => setTimeout(resolve, 100));
   }
 
@@ -122,7 +124,7 @@ export async function chromeAPICompletions(context: CompletionContext): Promise<
     from: word.from,
     options: [
       ...cachedCompletions || [],
-      ...defaultCompletions || []
+      ...defaultCompletions
     ],
   };
 }

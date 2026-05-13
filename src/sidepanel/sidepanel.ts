@@ -2,6 +2,7 @@ import './sidepanel.css';
 import { Editor } from './editor';
 import { Console } from './console';
 import { Script, scriptStore } from './script-store';
+import { portManager } from './port-manager';
 
 class SidePanel {
   private editor: Editor;
@@ -12,7 +13,6 @@ class SidePanel {
   private newScriptBtn: HTMLButtonElement;
   private currentTabId: number | null = null;
   private currentRequestId: string | null = null;
-  private backgroundPort: chrome.runtime.Port | null = null;
   private scripts: Map<string, Script> = new Map();
   private currentScriptId: string | null = null;
 
@@ -108,8 +108,8 @@ class SidePanel {
   }
 
   private setupMessageHandler(): void {
-    this.backgroundPort = chrome.runtime.connect({ name: 'sidepanel-to-background' });
-    this.backgroundPort.onMessage.addListener((message) => {
+    // 使用共享的 portManager
+    portManager.onMessage((message) => {
       if (message.requestId === this.currentRequestId) {
         if (message.type === 'executeLog') {
           const { level, message: msg } = message;
@@ -127,6 +127,13 @@ class SidePanel {
         }
       }
     });
+
+    portManager.onDisconnect(() => {
+      console.warn('Port 断开连接');
+    });
+
+    // 初始化连接
+    portManager.connect();
   }
 
   private async getCurrentTab(): Promise<void> {
@@ -146,6 +153,11 @@ class SidePanel {
       return;
     }
 
+    if (!portManager.isConnected()) {
+      this.console.warn('正在等待连接...');
+      return;
+    }
+
     const script = this.editor.getValue();
     if (!script.trim()) {
       this.console.warn('请输入脚本');
@@ -158,12 +170,17 @@ class SidePanel {
     const requestId = crypto.randomUUID();
     this.currentRequestId = requestId;
 
-    this.backgroundPort?.postMessage({
-        type: 'execute',
-        script,
-        requestId,
-        tabId: this.currentTabId,
+    const sent = portManager.postMessage({
+      type: 'execute',
+      script,
+      requestId,
+      tabId: this.currentTabId,
     });
+
+    if (!sent) {
+      this.console.error('发送消息失败');
+      this.runBtn.disabled = false;
+    }
   }
 
   private clearConsole(): void {

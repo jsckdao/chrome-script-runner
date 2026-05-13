@@ -1,6 +1,35 @@
 // Content Script - 作为桥梁接收来自 background 的消息
 // 但实际脚本执行逻辑在 background.ts 的 sandbox 函数中
 
+const defaultAttrs = [
+  'id', 'className',  'href', 'src', 'style', 'alt', 'title', 
+  'target', 'rel ','type', 'value', 'checked', 'disabled', 'readonly',
+  'width', 'height', 'tabindex'
+];
+
+function takeElementAttrs(el: HTMLElement): Record<string, string> {
+  const attrs = {} as Record<string, string>;
+  for (const attr of defaultAttrs) {
+    if (el.hasAttribute(attr)) {
+      attrs[attr] = el.getAttribute(attr) || '';
+    }
+  }
+  return attrs;
+}
+
+function takeElementInfo(el: HTMLElement) {
+  const rect = el.getBoundingClientRect();
+  return {
+    tagName: el.tagName,
+    textContent: el.textContent?.slice(0, 200),
+    attrs: takeElementAttrs(el),
+    dataset: {
+      ...el.dataset
+    },
+    rect: { top: rect.top, left: rect.left, width: rect.width, height: rect.height }
+  }
+}
+
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === 'ping') {
     sendResponse({ ready: true });
@@ -14,12 +43,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         sendResponse({ error: `Element not found: ${message.selector}` });
         return false;
       }
-      const rect = el.getBoundingClientRect();
-      sendResponse({
-        tagName: el.tagName,
-        textContent: el.textContent?.slice(0, 200),
-        rect: { top: rect.top, left: rect.left, width: rect.width, height: rect.height }
-      });
+      sendResponse(takeElementInfo(el));
     } catch (e) {
       sendResponse({ error: String(e) });
     }
@@ -32,12 +56,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       const result = [];
       for (let i = 0; i < Math.min(elements.length, 100); i++) {
         const el = elements[i];
-        const rect = el.getBoundingClientRect();
-        result.push({
-          tagName: el.tagName,
-          textContent: el.textContent?.slice(0, 200),
-          rect: { top: rect.top, left: rect.left, width: rect.width, height: rect.height }
-        });
+        result.push(takeElementInfo(el));
       }
       sendResponse(result);
     } catch (e) {
