@@ -1,4 +1,5 @@
-import { z, ZodTypeAny, ZodObject, ZodAny, ZodTuple } from 'zod';
+import { Completion } from '@codemirror/autocomplete';
+import { z, ZodTuple } from 'zod';
 
 /**
  * Async function definition with Zod schema validation
@@ -15,8 +16,8 @@ export interface SyncFunctionDef<T extends ZodTuple = any> {
   readonly __type: 'sync_function';
   readonly name: string;
   readonly description: string;
-  readonly params?: T;
-  readonly execute: (params?: z.infer<T>) => unknown;
+  readonly params: T;
+  readonly execute: (params: z.infer<T>) => unknown;
 }
 
 export type FunctionDef = AsyncFunctionDef | SyncFunctionDef;
@@ -84,14 +85,19 @@ export function defineSyncFunction<T extends ZodTuple>(
 /**
  * Extract parameter descriptions from Zod schema for code completion.
  */
-export function getParamDescriptions<T extends ZodTuple<any>>(
-  schema: T
+export function getParamDescriptions(
+  schema: ZodTuple | undefined
 ): Record<string, { type: string; description: string; required: boolean }> {
-  const shape = schema.shape;
   const result: Record<string, { type: string; description: string; required: boolean }> = {};
 
+  if (!schema || typeof schema !== 'object' || !('shape' in schema)) {
+    return result;
+  }
+
+  const shape = (schema as any).shape;
+
   // 元组的 shape 是数组，用索引作为 key
-  shape.forEach((field, index) => {
+  shape.forEach((field: any, index: number) => {
     const zodField = field as any;
     result[String(index)] = {
       type: zodField._def?.typeName || 'unknown',
@@ -127,4 +133,30 @@ export function toCompletionInfo<T extends ZodTuple<any>>(
     })),
     returnType: 'Promise<unknown>'
   };
+}
+
+/**
+ * Convert a FunctionDef to a CodeMirror Completion object for code completion.
+ */
+export function functionDefToCompletion(def: FunctionDef): Completion {
+  const paramDescriptions = getParamDescriptions(def.params);
+  const params = Object.entries(paramDescriptions).map(([index, info]) => ({
+    name: `arg${index}`,
+    type: info.type,
+    description: info.description,
+    required: info.required
+  }));
+
+  const infoText = params.length > 0
+    ? params.map(p => `  ${p.name}: ${p.description}`).join('\n')
+    : '  (no parameters)';
+
+  const fullInfo = `${def.description}\n\nParameters:\n${infoText}`;
+
+  return {
+    label: `browser.${def.name}`,
+    type: 'function',
+    detail: def.description,
+    info: fullInfo,
+  } as Completion;
 }

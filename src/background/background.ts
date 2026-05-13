@@ -1,6 +1,7 @@
 // 配置 side panel 行为：点击扩展图标时打开 side panel
 chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
 
+import { functionDefToCompletion } from '../libs/browser-api/base';
 import { createBrowserApi } from '../libs/browser-api';
 // 导入 fengari-web (不包含 js interop，避免 eval)
 import { executeAsyncUntilDone } from '../libs/async-executor';
@@ -11,7 +12,8 @@ type MessageType =
   | { type: 'execute'; script: string; requestId: string; tabId: number }
   | { type: 'executeResult'; requestId: string; result: unknown; error?: string }
   | { type: 'console'; requestId: string; level: 'log' | 'error' | 'warn' | 'info'; args: unknown[] }
-  | { type: 'pageResult'; requestId: string; result: unknown; error?: string };
+  | { type: 'pageResult'; requestId: string; result: unknown; error?: string }
+  | { type: 'getCompletions'; requestId: string };
 
 function onMessage(
   callback: (message: MessageType, sender: chrome.runtime.MessageSender, sendResponse: (response: unknown) => void) => void
@@ -27,7 +29,7 @@ function wrapBrowserApi(api: BrowserApi) {
   Object.keys(api).forEach((k) => {
     const v = api[k];
     res[k] = async (...args: any[]) => {
-      v.params
+      args = v.params.parse(args);
       await v.execute(args);
     }
   });
@@ -43,17 +45,15 @@ chrome.runtime.onConnect.addListener((port) => {
     port.onDisconnect.addListener(() => {
       sidePanelPort = null;
     });
-  }
-});
 
-onMessage(async (message, _, sendResponse) => {
+
+    port.onMessage.addListener(async (message) => {
   if (message.type === 'execute') {
     const { script, requestId } = message as Extract<MessageType, { type: 'execute' }>;
     console.log('Received execute request:', { script, requestId });
 
     try {
       const browserApi = wrapBrowserApi(createBrowserApi());
-
       const result = await executeAsyncUntilDone({
         code: script,
         apiObject: browserApi,
@@ -80,6 +80,21 @@ onMessage(async (message, _, sendResponse) => {
         error: err instanceof Error ? err.message : String(err),
       });
     }
+  } else if (message.type === 'getCompletions') {
+    const { requestId } = message as Extract<MessageType, { type: 'getCompletions' }>;
+    const api = createBrowserApi();
+    if (!api) {
+      console.error('createBrowserApi returned undefined');
+      return;
+    }
+    const completions = Object.values(api).map(functionDefToCompletion);
+    sidePanelPort?.postMessage({
+      type: 'completionsResponse',
+      requestId,
+      completions,
+    });
+  }
+})
   }
 });
 

@@ -102,12 +102,12 @@ class SidePanel {
     const requestId = crypto.randomUUID();
     this.currentRequestId = requestId;
 
-    chrome.runtime.sendMessage({
+    this.backgroundPort?.postMessage({
         type: 'execute',
         script,
         requestId,
         tabId: this.currentTabId,
-    }).catch(console.error);
+    });
   }
 
   private clearConsole(): void {
