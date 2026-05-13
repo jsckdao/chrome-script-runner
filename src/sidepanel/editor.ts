@@ -41,6 +41,7 @@ end
 export class Editor {
   private view: EditorView;
   private container: HTMLElement;
+  private changeCallback: (() => void) | null = null;
 
   constructor(container: HTMLElement) {
     this.container = container;
@@ -66,6 +67,11 @@ export class Editor {
         '.cm-scroller': {
           overflow: 'auto',
         },
+      }),
+      EditorView.updateListener.of((update) => {
+        if (update.docChanged && this.changeCallback) {
+          this.changeCallback();
+        }
       }),
     ];
 
@@ -104,5 +110,9 @@ export class Editor {
 
   focus(): void {
     this.view.focus();
+  }
+
+  onchange(callback: () => void): void {
+    this.changeCallback = callback;
   }
 }

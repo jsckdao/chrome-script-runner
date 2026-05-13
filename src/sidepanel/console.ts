@@ -62,6 +62,15 @@ export class Console {
     this.addEntry('result', [formatted]);
   }
 
+  logLevel(level: string, ...args: unknown[]): void {
+    const validLevels = ['log', 'error', 'warn', 'info', 'result'] as const;
+    if (validLevels.includes(level as typeof validLevels[number])) {
+      this.addEntry(level as LogEntry['level'], args);
+    } else {
+      this.addEntry('log', [level, ...args]);
+    }
+  }
+
   private addEntry(level: LogEntry['level'], args: unknown[]): void {
     const entry: LogEntry = {
       id: ++this.idCounter,
