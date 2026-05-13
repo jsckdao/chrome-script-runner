@@ -202,7 +202,7 @@ export function executeAsync(params: ExecuteParams): {
  * @param api 
  * @returns 
  */
-export async function executeAsyncUntilDone(params: ExecuteParams): Promise<unknown> {
+export async function executeAsyncUntilDone(params: ExecuteParams): Promise<any> {
   const controller = executeAsync(params);
   let call_result: any = undefined;
   while (true) {

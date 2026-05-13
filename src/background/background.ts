@@ -27,12 +27,24 @@ function wrapBrowserApi(api: BrowserApi) {
   Object.keys(api).forEach((k) => {
     const v = api[k];
     res[k] = async (...args: any[]) => {
+      v.params
       await v.execute(args);
     }
   });
   return res;
 }
 
+// 维护来自 sidepanel 的 port
+let sidePanelPort: chrome.runtime.Port | null = null;
+
+chrome.runtime.onConnect.addListener((port) => {
+  if (port.name === 'sidepanel-to-background') {
+    sidePanelPort = port;
+    port.onDisconnect.addListener(() => {
+      sidePanelPort = null;
+    });
+  }
+});
 
 onMessage(async (message, _, sendResponse) => {
   if (message.type === 'execute') {
@@ -41,11 +53,12 @@ onMessage(async (message, _, sendResponse) => {
 
     try {
       const browserApi = wrapBrowserApi(createBrowserApi());
+
       const result = await executeAsyncUntilDone({
         code: script,
         apiObject: browserApi,
         log: (level, msg) => {
-          chrome.runtime.sendMessage({
+          sidePanelPort?.postMessage({
             type: 'executeLog',
             requestId,
             level,
@@ -53,13 +66,14 @@ onMessage(async (message, _, sendResponse) => {
           });
         }
       });
-      sendResponse({
+      console.log('result', result)
+      sidePanelPort?.postMessage({
         type: 'executeResult',
         requestId,
-        result: serialize(result),
+        result,
       });
     } catch (err) {
-      sendResponse({
+      sidePanelPort?.postMessage({
         type: 'executeResult',
         requestId,
         result: null,

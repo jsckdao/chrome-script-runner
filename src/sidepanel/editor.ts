@@ -28,6 +28,16 @@ const darkHighlightStyle = HighlightStyle.define([
   { tag: t.number, color: '#b5cea8' },                         // 数字 - 浅绿
 ]);
 
+const exampleCode = `-- 这是一个示例 Lua 脚本
+
+-- 这里是入口函数
+function main()
+  log.info('Hello world!') -- 使用提供的 log API 输出日志
+  log.error('This is an error message') -- 输出错误日志
+  return 100
+end
+`
+
 export class Editor {
   private view: EditorView;
   private container: HTMLElement;
@@ -71,7 +81,7 @@ export class Editor {
   }
 
   private getDefaultCode(): string {
-    return `return 1 + 3`;
+    return exampleCode;
   }
 
   getValue(): string {

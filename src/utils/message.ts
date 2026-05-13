@@ -4,15 +4,7 @@ export type MessageType =
   | { type: 'executeLog'; requestId: string; level: 'log' | 'error' | 'warn' | 'info'; message: string };
 
 export function sendMessage(message: MessageType): Promise<unknown> {
-  return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage(message, (response) => {
-      if (chrome.runtime.lastError) {
-        reject(new Error(chrome.runtime.lastError.message));
-      } else {
-        resolve(response);
-      }
-    });
-  });
+  return chrome.runtime.sendMessage(message);
 }
 
 export function sendMessageToTab(tabId: number, message: MessageType): Promise<unknown> {

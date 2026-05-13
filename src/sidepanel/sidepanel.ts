@@ -10,6 +10,7 @@ class SidePanel {
   private clearBtn: HTMLButtonElement;
   private currentTabId: number | null = null;
   private currentRequestId: string | null = null;
+  private backgroundPort: chrome.runtime.Port | null = null;
 
   constructor() {
     this.initUI();
@@ -20,6 +21,7 @@ class SidePanel {
     this.setupEventListeners();
     this.setupMessageHandler();
     this.getCurrentTab();
+    
   }
 
   private initUI(): void {
@@ -49,11 +51,23 @@ class SidePanel {
   }
 
   private setupMessageHandler(): void {
-    onMessage((message) => {
+    this.backgroundPort = chrome.runtime.connect({ name: 'sidepanel-to-background' });
+    this.backgroundPort.onMessage.addListener((message) => {
       if (message.requestId === this.currentRequestId) {
         if (message.type === 'executeLog') {
           const { level, message: msg } = message;
-          this.console[level](msg);
+          this.console[level.toLowerCase()](msg);
+        }
+        else if (message.type === 'executeResult') {
+          const { result, error } = message;
+          if (error) {
+            this.console.error('执行错误:', error);
+          } else if (result) {
+            // 处理执行
+            this.console.result(result);
+          }
+
+          this.runBtn.disabled = false;
         }
       }
     });
@@ -88,21 +102,12 @@ class SidePanel {
     const requestId = crypto.randomUUID();
     this.currentRequestId = requestId;
 
-    try {
-      const result: any = await sendMessage({
+    chrome.runtime.sendMessage({
         type: 'execute',
         script,
         requestId,
         tabId: this.currentTabId,
-      });
-      if (result && typeof result === 'object' && 'error' in result) {
-        throw new Error(result.error as string);
-      }
-      this.console.result(result.result as any);
-    } catch (err) {
-      this.console.error('执行失败:', err);
-      this.runBtn.disabled = false;
-    }
+    }).catch(console.error);
   }
 
   private clearConsole(): void {

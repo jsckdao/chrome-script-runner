@@ -3,7 +3,7 @@ import { z, ZodTypeAny, ZodObject, ZodAny, ZodTuple } from 'zod';
 /**
  * Async function definition with Zod schema validation
  */
-export interface AsyncFunctionDef<T extends ZodTypeAny = any> {
+export interface AsyncFunctionDef<T extends ZodTuple = any> {
   readonly __type: 'async_function';
   readonly name: string;
   readonly description: string;
@@ -11,7 +11,7 @@ export interface AsyncFunctionDef<T extends ZodTypeAny = any> {
   readonly execute: (params: z.infer<T>) => Promise<unknown>;
 }
 
-export interface SyncFunctionDef<T extends ZodTypeAny = any> {
+export interface SyncFunctionDef<T extends ZodTuple = any> {
   readonly __type: 'sync_function';
   readonly name: string;
   readonly description: string;
