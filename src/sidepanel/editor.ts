@@ -1,6 +1,6 @@
 import { EditorState, Extension } from '@codemirror/state';
 import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightActiveLineGutter } from '@codemirror/view';
-import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
+import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
 import { StreamLanguage, syntaxHighlighting, HighlightStyle } from '@codemirror/language';
 import { lua } from '@codemirror/legacy-modes/mode/lua';
 import { autocompletion, CompletionContext } from '@codemirror/autocomplete';
@@ -46,6 +46,17 @@ export class Editor {
   constructor(container: HTMLElement) {
     this.container = container;
     this.view = this.createView();
+    this.setupTabIntercept();
+  }
+
+  private setupTabIntercept(): void {
+    // 拦截 Tab 键，防止焦点丢失
+    this.container.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        this.view.dispatch(this.view.state.replaceSelection('  '));
+      }
+    });
   }
 
   private createView(): EditorView {

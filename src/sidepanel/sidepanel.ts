@@ -15,6 +15,7 @@ class SidePanel {
   private currentRequestId: string | null = null;
   private scripts: Map<string, Script> = new Map();
   private currentScriptId: string | null = null;
+  private saveTimer: number | null = null;
 
   constructor() {
     this.editor = new Editor(document.getElementById('editor')!);
@@ -101,9 +102,15 @@ class SidePanel {
       }
     });
 
-    // 编辑器内容变化时保存
+    // 编辑器内容变化时保存（防抖 500ms）
     this.editor.onchange(() => {
-      this.saveCurrentScript();
+      if (this.saveTimer !== null) {
+        clearTimeout(this.saveTimer);
+      }
+      this.saveTimer = window.setTimeout(() => {
+        this.saveTimer = null;
+        this.saveCurrentScript();
+      }, 800);
     });
   }
 

@@ -11,6 +11,13 @@ vi.stubGlobal('chrome', {
   tabs: {
     query: vi.fn(),
     update: vi.fn(),
+    create: vi.fn(),
+    remove: vi.fn(),
+    get: vi.fn(),
+    onUpdated: {
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+    },
   },
   runtime: {
     lastError: null,
@@ -32,6 +39,8 @@ describe('browser-api - API Definitions', () => {
       'changeCurrentTab',
       'getAllTabs',
       'navigateTabUrl',
+      'openTab',
+      'closeTab',
       'querySelector',
       'querySelectorAll',
       'click',
@@ -140,6 +149,78 @@ describe('browser-api - Tab API Execution', () => {
       expect(chrome.tabs.update).toHaveBeenCalledWith(1, { url: 'https://newurl.com' });
     });
   });
+
+  describe('openTab', () => {
+    it('should open a new tab with specified URL and wait for load complete', async () => {
+      const mockNewTab = { id: 3, title: 'New Tab', url: 'https://newtab.com', active: true, windowId: 1 };
+      (chrome.tabs.create as any).mockImplementation((_options: any, callback: Function) => {
+        callback(mockNewTab);
+      });
+
+      (chrome.tabs.get as any).mockImplementation((_tabId: number, callback: Function) => {
+        callback(mockNewTab);
+      });
+
+      let onUpdatedCallback: Function | null = null;
+      (chrome.tabs.onUpdated.addListener as any).mockImplementation((cb: Function) => {
+        onUpdatedCallback = cb;
+      });
+
+      const api = createBrowserApi() as BrowserApi;
+      const resultPromise = api.openTab.execute(['https://newtab.com']);
+
+      // Simulate page load complete
+      onUpdatedCallback!(3, { status: 'complete' });
+
+      const result = await resultPromise;
+      expect(result).toEqual({
+        id: 3,
+        title: 'New Tab',
+        url: 'https://newtab.com',
+        active: true,
+        windowId: 1,
+      });
+      expect(chrome.tabs.create).toHaveBeenCalledWith({ url: 'https://newtab.com' }, expect.any(Function));
+    });
+
+    it('should reject when tab creation fails', async () => {
+      (chrome.tabs.create as any).mockImplementation((_options: any, callback: Function) => {
+        chrome.runtime.lastError = { message: 'Failed to create tab' };
+        callback(null);
+      });
+
+      let onUpdatedCallback: Function | null = null;
+      (chrome.tabs.onUpdated.addListener as any).mockImplementation((cb: Function) => {
+        onUpdatedCallback = cb;
+      });
+
+      const api = createBrowserApi() as BrowserApi;
+      await expect(api.openTab.execute(['https://example.com'])).rejects.toThrow('Failed to create tab');
+    });
+  });
+
+  describe('closeTab', () => {
+    it('should close the specified tab', async () => {
+      (chrome.tabs.remove as any).mockResolvedValue(undefined);
+
+      const api = createBrowserApi() as BrowserApi;
+      const result = await api.closeTab.execute([1]);
+
+      expect(result).toBe(true);
+      expect(chrome.tabs.remove).toHaveBeenCalledWith(1);
+    });
+
+    it('should close multiple tabs', async () => {
+      (chrome.tabs.remove as any).mockResolvedValue(undefined);
+
+      const api = createBrowserApi() as BrowserApi;
+      await api.closeTab.execute([1]);
+      await api.closeTab.execute([2]);
+
+      expect(chrome.tabs.remove).toHaveBeenCalledWith(1);
+      expect(chrome.tabs.remove).toHaveBeenCalledWith(2);
+    });
+  });
 });
 
 describe('browser-api - JSON API Execution', () => {
@@ -205,6 +286,18 @@ describe('browser-api - Parameter Validation', () => {
     const api = createBrowserApi() as BrowserApi;
     expect(() => api.navigateTabUrl.params.parse([1, 'https://example.com'])).not.toThrow();
     expect(() => api.navigateTabUrl.params.parse(['not-a-number', 'https://example.com'])).toThrow();
+  });
+
+  it('should validate params for openTab', () => {
+    const api = createBrowserApi() as BrowserApi;
+    expect(() => api.openTab.params.parse(['https://example.com'])).not.toThrow();
+    expect(() => api.openTab.params.parse([123])).toThrow();
+  });
+
+  it('should validate params for closeTab', () => {
+    const api = createBrowserApi() as BrowserApi;
+    expect(() => api.closeTab.params.parse([1])).not.toThrow();
+    expect(() => api.closeTab.params.parse(['not-a-number'])).toThrow();
   });
 
   it('should validate params for stringifyJSON', () => {

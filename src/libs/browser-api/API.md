@@ -5,6 +5,8 @@
 - [x] `browser.wait(seconds)`, 等待 指定的秒数。
 - [x] `browser.getCurrentTab()`, 获取当前用户正在浏览的标签页的信息，包括标题、URL、ID 等。
 - [x] `browser.changeCurrentTab(tabId)`, 使当前window 中的标签页切换到指定的标签页
+- [x] `browser.openTab(url)`, 打开一个新的标签页并导航到指定页面， 返回 tab 信息
+- [x] `browser.closeTab(tabId)`, 关闭一个标签页。
 - [x] `browser.getAllTabs()`, 获取当前 sidepanel 所在的 window 下的所有标签页信息
 - [x] `browser.navigateTabUrl(tabId, url)`,  使指定标签页跳转到指定 URL。
 - [x] `browser.querySelector(tabId, selector)`, 在指定标签页中查询元素信息。
