@@ -36,10 +36,10 @@ export function usePortManager() {
 
   let unsubscribeMessage: (() => void) | null = null;
   let unsubscribeDisconnect: (() => void) | null = null;
+  let unsubscribeConnect: (() => void) | null = null;
 
   function connect() {
     portManager.connect();
-    isConnected.value = portManager.isConnected();
   }
 
   function onMessage(handler: (message: BackgroundMessage) => void): () => void {
@@ -66,11 +66,16 @@ export function usePortManager() {
     unsubscribeDisconnect = portManager.onDisconnect(() => {
       isConnected.value = false;
     });
+
+    unsubscribeConnect = portManager.onConnect(() => {
+      isConnected.value = true;
+    })
   });
 
   onUnmounted(() => {
     if (unsubscribeMessage) unsubscribeMessage();
     if (unsubscribeDisconnect) unsubscribeDisconnect();
+    if (unsubscribeConnect) unsubscribeConnect();
   });
 
   return {

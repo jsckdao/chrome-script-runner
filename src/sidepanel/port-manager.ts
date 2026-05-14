@@ -1,11 +1,13 @@
 // Port 连接管理器 - 单例模式
 type MessageHandler = (message: any) => void;
 type DisconnectHandler = () => void;
+type ConnectHandler = () => void;
 
 class PortManager {
   private port: chrome.runtime.Port | null = null;
   private messageHandlers: Set<MessageHandler> = new Set();
   private disconnectHandlers: Set<DisconnectHandler> = new Set();
+  private connectHandlers: Set<ConnectHandler> = new Set();
   private reconnectTimer: number | null = null;
   private isConnecting = false;
 
@@ -30,6 +32,7 @@ class PortManager {
 
       this.isConnecting = false;
       console.info('Port 连接完成');
+      this.connectHandlers.forEach(handler => handler());
       return this.port;
     } catch (err) {
       console.info('Port 连接失败:', err);
@@ -56,6 +59,11 @@ class PortManager {
   onDisconnect(handler: DisconnectHandler): () => void {
     this.disconnectHandlers.add(handler);
     return () => this.disconnectHandlers.delete(handler);
+  }
+
+  onConnect(handler: ConnectHandler): () => void {
+    this.connectHandlers.add(handler);
+    return () => this.connectHandlers.delete(handler);
   }
 
   postMessage(message: any): boolean {
