@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 import { copyFileSync, existsSync, mkdirSync } from 'fs';
+import vue from '@vitejs/plugin-vue';
+import tailwindcss from '@tailwindcss/vite';
 
 const manifestPath = resolve(__dirname, 'manifest.json');
 const distPath = resolve(__dirname, 'dist');
@@ -20,7 +22,7 @@ function copyManifestPlugin() {
 
 export default defineConfig({
   root: resolve(__dirname, 'src'),
-  plugins: [copyManifestPlugin()],
+  plugins: [vue(), tailwindcss(), copyManifestPlugin()],
   define: {
     // 强制 fengari 使用浏览器模式 - process 检测
     'process.env.FENGARICONF': JSON.stringify('{"process":false}'),

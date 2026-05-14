@@ -1,220 +1,26 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+@import "tailwindcss";
 
-body {
-  width: 100%;
-  height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-size: 14px;
-  display: flex;
-  flex-direction: column;
-  background: #1e1e1e;
-  color: #d4d4d4;
-}
-
-.toolbar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background: #252526;
-  border-bottom: 1px solid #3c3c3c;
-}
-
-.toolbar-title {
-  font-weight: 600;
-  font-size: 13px;
-  color: #cccccc;
-  margin-right: 16px;
-}
-
-.script-selector {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-right: auto;
-}
-
-#script-select {
-  background: #3c3c3c;
-  color: #d4d4d4;
-  border: 1px solid #555;
-  border-radius: 4px;
-  padding: 4px 8px;
-  font-size: 12px;
-  min-width: 160px;
-  cursor: pointer;
-}
-
-#script-select:hover {
-  background: #4a4a4a;
-}
-
-.btn-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  padding: 0;
-  background: #0e639c;
-  color: #ffffff;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.btn-icon:hover {
-  background: #1177bb;
-}
-
-.btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 12px;
-  border: none;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.btn-primary {
-  background: #0e639c;
-  color: #ffffff;
-}
-
-.btn-primary:hover {
-  background: #1177bb;
-}
-
-.btn-primary:disabled {
-  background: #3c3c3c;
-  color: #808080;
-  cursor: not-allowed;
-}
-
-.btn-danger {
-  background: #5a1d1d;
-  color: #f48771;
-}
-
-.btn-danger:hover {
-  background: #6d2828;
-}
-
-.btn-secondary {
-  background: #3c3c3c;
-  color: #d4d4d4;
-}
-
-.btn-secondary:hover {
-  background: #4a4a4a;
-}
-
-.editor-container {
-  flex: 1;
-  min-height: 200px;
-  overflow: hidden;
-}
-
-.editor-container .cm-editor {
-  height: 100%;
-}
-
-.editor-container .cm-scroller {
-  overflow: auto;
-}
-
-.editor-container .cm-content {
-  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-  font-size: 13px;
-}
-
-.console-container {
-  height: 180px;
-  min-height: 120px;
-  background: #1e1e1e;
-  border-top: 1px solid #3c3c3c;
-  display: flex;
-  flex-direction: column;
-}
-
-.console-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 12px;
-  background: #252526;
-  border-bottom: 1px solid #3c3c3c;
-}
-
-.console-title {
-  font-size: 12px;
-  font-weight: 500;
-  color: #808080;
-}
-
-.btn-clear {
-  padding: 2px 8px;
-  font-size: 11px;
-}
-
-.console-output {
-  flex: 1;
-  overflow-y: auto;
-  padding: 8px 12px;
-  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.console-line {
-  margin-bottom: 4px;
-  word-break: break-all;
-}
-
-.console-line.log {
-  color: #d4d4d4;
-}
-
-.console-line.error {
-  color: #f48771;
-  background: rgba(244, 135, 113, 0.1);
-  padding: 2px 4px;
-  margin: 0 -4px;
-  border-radius: 2px;
-}
-
-.console-line.warn {
-  color: #cca700;
-}
-
-.console-line.info {
-  color: #75beff;
-}
-
-.console-line.result {
-  color: #89d185;
-  font-style: italic;
-}
-
-.console-empty {
-  color: #606060;
-  font-style: italic;
+/* VS Code 风格深色主题 */
+@theme {
+  --color-bg-primary: #1e1e1e;
+  --color-bg-secondary: #252526;
+  --color-border: #3c3c3c;
+  --color-text: #d4d4d4;
+  --color-text-muted: #808080;
+  --color-btn-primary: #0e639c;
+  --color-btn-primary-hover: #1177bb;
+  --color-btn-secondary: #3c3c3c;
+  --color-btn-secondary-hover: #4a4a4a;
+  --color-console-error: #f48771;
+  --color-console-warn: #cca700;
+  --color-console-info: #75beff;
+  --color-console-result: #89d185;
+  --color-console-empty: #606060;
 }
 
 /* CodeMirror 主题覆盖 */
 .cm-editor {
-  background: #1e1e1e !important;
+  background: var(--color-bg-primary) !important;
   height: 100%;
 }
 
@@ -227,8 +33,8 @@ body {
 }
 
 .cm-gutters {
-  background: #1e1e1e !important;
-  border-right: 1px solid #3c3c3c !important;
+  background: var(--color-bg-primary) !important;
+  border-right: 1px solid var(--color-border) !important;
   color: #858585 !important;
 }
 
@@ -267,14 +73,14 @@ body {
 
 /* CodeMirror 自动补全弹层 - 黑暗模式 */
 .cm-tooltip {
-  background: #252526 !important;
-  border: 1px solid #3c3c3c !important;
+  background: var(--color-bg-secondary) !important;
+  border: 1px solid var(--color-border) !important;
   border-radius: 4px !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
 }
 
 .cm-tooltip-autocomplete {
-  background: #252526 !important;
+  background: var(--color-bg-secondary) !important;
 }
 
 .cm-tooltip-autocomplete > ul {
@@ -284,7 +90,7 @@ body {
 
 .cm-tooltip-autocomplete > ul > li {
   padding: 4px 8px !important;
-  color: #d4d4d4 !important;
+  color: var(--color-text) !important;
 }
 
 .cm-tooltip-autocomplete > ul > li[aria-selected] {
@@ -293,7 +99,7 @@ body {
 }
 
 .cm-completionLabel {
-  color: #d4d4d4 !important;
+  color: var(--color-text) !important;
 }
 
 .cm-completionDetail {
@@ -308,5 +114,27 @@ body {
 }
 
 .cm-tooltip.cm-tooltip-hover > .cm-tooltip-content {
-  color: #d4d4d4 !important;
+  color: var(--color-text) !important;
+}
+
+/* vue3-split gutter styling */
+.gutter {
+  background-color: var(--color-bg-secondary);
+  background-repeat: no-repeat;
+  background-position: 50%;
+  transition: background-color 0.15s;
+}
+
+.gutter:hover {
+  background-color: var(--color-btn-primary);
+}
+
+.gutter.gutter-horizontal {
+  cursor: col-resize;
+}
+
+.gutter.gutter-vertical {
+  cursor: row-resize;
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2P8z8Dwn4EIwDiqkL4KAzitpwWMBJGMWAmDowyYQMJkY5uBjAAADgZBLJgIq38AAAAABJRU5ErkJggg==');
+  background-position: center center;
 }

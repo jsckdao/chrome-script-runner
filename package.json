@@ -18,17 +18,23 @@
     "@codemirror/state": "^6.4.1",
     "@codemirror/view": "^6.33.0",
     "@lezer/highlight": "^1.2.3",
+    "@tailwindcss/vite": "^4.3.0",
+    "@vitejs/plugin-vue": "^6.0.6",
     "codemirror": "^6.0.1",
     "esprima": "^4.0.1",
     "fengari": "^0.1.5",
     "fengari-interop": "^0.1.4",
     "fengari-web": "^0.1.4",
     "lua.vm.js": "^0.0.1",
+    "tailwindcss": "^4.3.0",
+    "vue": "^3.5.34",
+    "vue3-split": "^0.0.3",
     "wasmoon": "^1.16.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.268",
+    "@vue/compiler-sfc": "^3.5.34",
     "typescript": "^5.5.0",
     "vite": "^5.4.0",
     "vitest": "2.1.9"

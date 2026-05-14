@@ -6,33 +6,7 @@
   <title>Script Runner</title>
 </head>
 <body>
-  <div class="toolbar">
-    <span class="toolbar-title">Script Runner</span>
-
-    <div class="script-selector">
-      <select id="script-select">
-        <option value="">-- 选择或新建脚本 --</option>
-      </select>
-      <button id="new-script-btn" class="btn btn-icon" title="新建脚本">+</button>
-    </div>
-
-    <button id="run-btn" class="btn btn-primary">▶ 运行</button>
-    <button id="clear-btn" class="btn btn-secondary">清除</button>
-  </div>
-
-  <div class="editor-container">
-    <div id="editor"></div>
-  </div>
-
-  <div class="console-container">
-    <div class="console-header">
-      <span class="console-title">控制台</span>
-    </div>
-    <div id="console-output" class="console-output">
-      <div class="console-empty">控制台暂无输出</div>
-    </div>
-  </div>
-
+  <div id="app"></div>
   <script type="module" src="./sidepanel.ts"></script>
 </body>
 </html>

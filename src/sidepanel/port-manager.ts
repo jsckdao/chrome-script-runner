@@ -29,9 +29,10 @@ class PortManager {
       });
 
       this.isConnecting = false;
+      console.info('Port 连接完成');
       return this.port;
     } catch (err) {
-      console.warn('Port 连接失败:', err);
+      console.info('Port 连接失败:', err);
       this.isConnecting = false;
       this.scheduleReconnect();
       return null;
@@ -67,7 +68,6 @@ class PortManager {
       this.port!.postMessage(message);
       return true;
     } catch (err) {
-      console.warn('发送消息失败:', err);
       return false;
     }
   }

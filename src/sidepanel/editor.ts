@@ -1,7 +1,8 @@
 import { EditorState, Extension } from '@codemirror/state';
 import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightActiveLineGutter } from '@codemirror/view';
-import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
+import { defaultKeymap, history, historyKeymap, indentWithTab, cursorLineStart, cursorLineEnd, cursorCharRight, cursorCharLeft, cursorLineDown, cursorLineUp, deleteLine, cursorSubwordForward, cursorSubwordBackward } from '@codemirror/commands';
 import { StreamLanguage, syntaxHighlighting, HighlightStyle } from '@codemirror/language';
+import { toggleComment } from '@codemirror/commands';
 import { lua } from '@codemirror/legacy-modes/mode/lua';
 import { autocompletion, CompletionContext } from '@codemirror/autocomplete';
 import { chromeAPICompletions } from './completions';
@@ -26,6 +27,24 @@ const darkHighlightStyle = HighlightStyle.define([
   { tag: [t.processingInstruction, t.string, t.inserted], color: '#ce9178' },  // 字符串 - 橙色
   { tag: t.invalid, color: '#f44747' },                        // 无效 - 红色
   { tag: t.number, color: '#b5cea8' },                         // 数字 - 浅绿
+]);
+
+// Emacs 风格快捷键
+const emacsKeymap = keymap.of([
+  // 光标移动
+  { key: 'C-a', run: cursorLineStart },
+  { key: 'C-e', run: cursorLineEnd },
+  { key: 'C-f', run: cursorCharRight },
+  { key: 'C-b', run: cursorCharLeft },
+  { key: 'C-n', run: cursorLineDown },
+  { key: 'C-p', run: cursorLineUp },
+  // 单词移动 (M-f, M-b)
+  { key: 'Alt-f', run: cursorSubwordForward },
+  { key: 'Alt-b', run: cursorSubwordBackward },
+  // 删除
+  { key: 'C-k', run: deleteLine },
+  // 注释 (M-;)
+  { key: 'Alt-;', run: toggleComment },
 ]);
 
 const exampleCode = `-- 这是一个示例 Lua 脚本
@@ -67,6 +86,7 @@ export class Editor {
       syntaxHighlighting(darkHighlightStyle),
       history(),
       keymap.of([...defaultKeymap, ...historyKeymap]),
+      emacsKeymap,
       StreamLanguage.define(lua),
       autocompletion({
         override: [(ctx: CompletionContext) => chromeAPICompletions(ctx)],
