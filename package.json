@@ -1,7 +1,15 @@
 {
   "name": "chrome-script-runner",
   "version": "1.0.0",
-  "type": "module",
+  "type":  "module",
+  "author": {
+    "name": "jsckdao",
+    "email": "jsckdao@gmail.com"
+  },
+  "description": "A Chrome extension with a sidebar for running sandboxed scripts.",
+  "repository": {
+    "url": "https://github.com/jsckdao/chrome-script-runner"
+  },
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build",
