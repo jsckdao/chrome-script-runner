@@ -33,7 +33,7 @@ onMounted(() => {
       saveTimer = window.setTimeout(() => {
         saveTimer = null;
         emit('save');
-      }, 800);
+      }, 500);
     });
   }
 });

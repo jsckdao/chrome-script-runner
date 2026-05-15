@@ -43,18 +43,6 @@ async function loadScripts() {
   }
 }
 
-async function handleScriptSelect(scriptId: string) {
-  // Save current script
-  if (currentScriptId.value) {
-    await saveCurrentScript();
-  }
-
-  currentScriptId.value = scriptId;
-  const script = scripts.value.find((s) => s.id === scriptId);
-  if (script) {
-    editorContent.value = script.content;
-  }
-}
 
 async function handleCreateScript() {
   const name = prompt('Enter script name:');
@@ -107,7 +95,7 @@ watch(currentScriptId, (newId) => {
   if (newId) {
     const script = scripts.value.find((s) => s.id === newId);
     if (script) {
-      editorContent.value = script.content;
+      scriptStore.get(script.id).then((s) => editorContent.value = s?.content || '');
     }
   }
 });
@@ -176,9 +164,24 @@ onMounted(async () => {
   await loadScripts();
   await getCurrentTab();
 
-  // Auto-select first script if available
-  if (scripts.value.length > 0 && !currentScriptId.value) {
-    await handleScriptSelect(scripts.value[0].id);
+  // Auto-create first script if none exist
+  if (scripts.value.length === 0) {
+    const script: Script = {
+      id: crypto.randomUUID(),
+      name: 'Untitled',
+      content: exampleCode,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+    await scriptStore.save(script);
+    await loadScripts();
+    if (scripts.value.length > 0) {
+      currentScriptId.value = scripts.value[0].id;
+      editorContent.value = scripts.value[0].content;
+    }
+  } else if (!currentScriptId.value) {
+    // Auto-select first script if available
+    currentScriptId.value = scripts.value[0].id;
   }
 
   document.addEventListener('keydown', handleKeydown);
@@ -216,7 +219,6 @@ onUnmounted(() => {
       <ScriptSelector
         v-model="currentScriptId"
         :scripts="scripts"
-        @select="handleScriptSelect"
         @create="handleCreateScript"
         @delete="handleDeleteScript"
       />
