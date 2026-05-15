@@ -176,15 +176,15 @@ export function executeAsync(params: ExecuteParams): {
 
         return doneWithResult(tojsCompletely(value));
       } else if (resumeStatus === lua.LUA_ERRSYNTAX) {
-        return doneWithError(new SyntaxError(`Syntax error: ${to_jsstring(lua.lua_tostring(co, -1))}`));
+        return doneWithError(new SyntaxError(`Syntax error: ${lua.lua_tojsstring(co, -1)}`));
       } else if (resumeStatus === lua.LUA_ERRMEM) {
         return doneWithError(new Error('Memory error'));
       }
       else if (resumeStatus === lua.LUA_ERRERR) {
-        return doneWithError(new Error(`Error during execution: ${to_jsstring(lua.lua_tostring(co, -1))}`));
+        return doneWithError(new Error(`Error during execution: ${lua.lua_tojsstring(co, -1)}`));
       }
       else if (resumeStatus === lua.LUA_ERRRUN) {
-        return doneWithError(new Error(`Runtime error: ${to_jsstring(lua.lua_tostring(co, -1))}`));
+        return doneWithError(new Error(`Runtime error: ${lua.lua_tojsstring(co, -1)}`));
       }
       else {
         // Error

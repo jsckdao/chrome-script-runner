@@ -73,6 +73,7 @@ chrome.runtime.onConnect.addListener((port) => {
         result,
       });
     } catch (err) {
+      console.error(err);
       sidePanelPort?.postMessage({
         type: 'executeResult',
         requestId,

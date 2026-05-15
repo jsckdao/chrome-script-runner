@@ -14,6 +14,7 @@ import { stringifyJSON } from './stringify-json';
 import { parseJSON } from './parse-json';
 import openTab from './open-tab';
 import closeTab from './close-tab';
+import llmGenerate from './llm-generate';
 
 // 所有需要暴露到 Lua 环境中的方法都在这里注册
 const browserApiFunctions: FunctionDef[] = [
@@ -32,6 +33,7 @@ const browserApiFunctions: FunctionDef[] = [
   httpPost,
   stringifyJSON,
   parseJSON,
+  llmGenerate,
 ]
 
 /**

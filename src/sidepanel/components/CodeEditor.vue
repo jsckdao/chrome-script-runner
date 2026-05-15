@@ -86,5 +86,5 @@ defineExpose({
 </script>
 
 <template>
-  <div ref="containerRef" class="flex-1 min-h-[200px] overflow-hidden [&_.cm-editor]:h-full"></div>
+  <div ref="containerRef" class="flex-1 min-h-[200px] overflow-hidden h-full [&_.cm-editor]:h-full"></div>
 </template>

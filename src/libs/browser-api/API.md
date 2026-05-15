@@ -17,3 +17,4 @@
 - [x] `browser.httpPost(url, bodyText)`, 发送 HTTP POST 请求并返回结果文本.
 - [x] `browser.stringifyJSON(data)`, 将各种数据格式化为 JSON 字符串。
 - [x] `browser.parseJSON(text)`, 将 JSON 字符串转换为 Lua 相应类型.
+- [] `browser.llmGenerate(prompt)`, 调用 chrome 内置的 Prompt API 使用 LLM 生成文本。
