@@ -2,6 +2,8 @@
 
 A Chrome extension with a sidebar for running sandboxed scripts. Uses Lua as the scripting language (via Fengari) to bypass CSP restrictions that block `eval` and `new Function()`.
 
+<img width="1913" height="980" alt="45b72f7a-f9d7-4634-b801-38b775b8f53e" src="https://github.com/user-attachments/assets/c18964ee-1f13-4e03-a9a8-a7986563cd32" />
+
 ## Build
 
 ```bash
