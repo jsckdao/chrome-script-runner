@@ -3,9 +3,9 @@ import { defineSyncFunction } from "./base";
 
 export const parseJSON = defineSyncFunction({
   name: 'parseJSON',
-  description: '将 JSON 字符串转换为 Lua 相应类型',
+  description: 'Convert JSON string to corresponding Lua type',
   params: z.tuple([
-    z.string().describe('JSON 字符串')
+    z.string().describe('JSON string')
   ]),
   execute: ([text]) => {
     return JSON.parse(text);

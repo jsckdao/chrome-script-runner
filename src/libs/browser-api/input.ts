@@ -16,11 +16,11 @@ async function sendToContentScript(tabId: number, type: string, payload: any): P
 
 export default defineAsyncFunction({
   name: 'input',
-  description: '在指定标签页中向指定的 input 元素中输入值',
+  description: 'Input value into a specified input element in the given tab',
   params: z.tuple([
-    z.number().describe('标签页 ID'),
-    z.string().describe('CSS 选择器'),
-    z.string().describe('要输入的值')
+    z.number().describe('Tab ID'),
+    z.string().describe('CSS selector'),
+    z.string().describe('Value to input')
   ]),
   execute: async ([tabId, selector, value]) => {
     const result = await sendToContentScript(tabId, 'input', { selector, value });

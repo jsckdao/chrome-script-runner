@@ -18,7 +18,7 @@ function handleContextMenu(e: MouseEvent, scriptId: string) {
   const script = props.scripts.find((s) => s.id === scriptId);
   if (!script) return;
 
-  const confirmed = confirm(`确定要删除脚本 "${script.name}" 吗？`);
+  const confirmed = confirm(`Are you sure you want to delete script "${script.name}"?`);
   if (confirmed) {
     emit('delete', scriptId);
   }
@@ -44,14 +44,14 @@ function handleChange(e: Event) {
         if (target.value) handleContextMenu(e, target.value);
       }"
     >
-      <option value="">-- 选择或新建脚本 --</option>
+      <option value="">-- Select or create a script --</option>
       <option v-for="script in scripts" :key="script.id" :value="script.id">
         {{ script.name }}
       </option>
     </select>
     <button
       class="flex items-center justify-center w-6 h-6 p-0 bg-[#0e639c] text-white border-none rounded text-base font-bold cursor-pointer transition-colors hover:bg-[#1177bb]"
-      title="新建脚本"
+      title="Create new script"
       @click="emit('create')"
     >
       +

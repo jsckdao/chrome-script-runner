@@ -3,9 +3,9 @@ import { defineSyncFunction } from "./base";
 
 export const stringifyJSON = defineSyncFunction({
   name: 'stringifyJSON',
-  description: '将各种数据格式化为 JSON 字符串',
+  description: 'Format various data into JSON string',
   params: z.tuple([
-    z.any().describe('要序列化的数据')
+    z.any().describe('Data to serialize')
   ]),
   execute: ([data]) => {
     return JSON.stringify(data);

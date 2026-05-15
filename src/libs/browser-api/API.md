@@ -1,20 +1,19 @@
 
-# 浏览器 API 文档
+# Browser API Documentation
 
-## api 功能开发列表
-- [x] `browser.wait(seconds)`, 等待 指定的秒数。
-- [x] `browser.getCurrentTab()`, 获取当前用户正在浏览的标签页的信息，包括标题、URL、ID 等。
-- [x] `browser.changeCurrentTab(tabId)`, 使当前window 中的标签页切换到指定的标签页
-- [x] `browser.openTab(url)`, 打开一个新的标签页并导航到指定页面， 返回 tab 信息
-- [x] `browser.closeTab(tabId)`, 关闭一个标签页。
-- [x] `browser.getAllTabs()`, 获取当前 sidepanel 所在的 window 下的所有标签页信息
-- [x] `browser.navigateTabUrl(tabId, url)`,  使指定标签页跳转到指定 URL。
-- [x] `browser.querySelector(tabId, selector)`, 在指定标签页中查询元素信息。
-- [x] `browser.querySelectorAll(tabId, selector)`,  在指定标签页中查询所有匹配的元素信息。
-- [x] `browser.click(tabId, elementSelector)`, 在指定标签页中点击元素。
-- [x] `browser.input(tabId, selector, value)`, 在指定标签页中向指定的 input 元素中输入值。
-- [x] `browser.httpGet(url)`, 发送 HTTP GET 请求并返回结果文本.
-- [x] `browser.httpPost(url, bodyText)`, 发送 HTTP POST 请求并返回结果文本.
-- [x] `browser.stringifyJSON(data)`, 将各种数据格式化为 JSON 字符串。
-- [x] `browser.parseJSON(text)`, 将 JSON 字符串转换为 Lua 相应类型.
-- [] `browser.llmGenerate(prompt)`, 调用 chrome 内置的 Prompt API 使用 LLM 生成文本。
+## API Development List
+- [x] `browser.wait(seconds)`, Wait for the specified number of seconds.
+- [x] `browser.getCurrentTab()`, Get information about the tab the user is currently browsing, including title, URL, ID, etc.
+- [x] `browser.changeCurrentTab(tabId)`, Switch to the specified tab in the current window.
+- [x] `browser.openTab(url)`, Open a new tab and navigate to the specified page, returns tab information.
+- [x] `browser.closeTab(tabId)`, Close a tab.
+- [x] `browser.getAllTabs()`, Get all tab information in the current window where the sidepanel is located.
+- [x] `browser.navigateTabUrl(tabId, url)`, Navigate the specified tab to the given URL.
+- [x] `browser.querySelector(tabId, selector)`, Query element information in the specified tab.
+- [x] `browser.querySelectorAll(tabId, selector)`, Query all matching element information in the specified tab.
+- [x] `browser.click(tabId, elementSelector)`, Click an element in the specified tab.
+- [x] `browser.input(tabId, selector, value)`, Input value into a specified input element in the given tab.
+- [x] `browser.httpGet(url)`, Send HTTP GET request and return result text.
+- [x] `browser.httpPost(url, bodyText)`, Send HTTP POST request and return result text.
+- [x] `browser.stringifyJSON(data)`, Format various data into JSON string.
+- [x] `browser.parseJSON(text)`, Convert JSON string to corresponding Lua type.

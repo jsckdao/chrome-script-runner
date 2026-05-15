@@ -1,239 +1,239 @@
 declare module 'fengari' {
-  // Lua state type - 指向 Lua 虚拟机状态的指针
-  // 在 Fengari 中，这是一个 opaque pointer，用于所有 Lua C API 调用
+  // Lua state type - pointer to Lua VM state
+  // In Fengari, this is an opaque pointer used for all Lua C API calls
   export type lua_State = unknown;
 
-  // lua 常量 - Lua 虚拟机返回状态码
+  // lua constants - status codes returned by Lua VM
   export const lua: {
-    // ========== 状态码常量 ==========
-    // Lua 操作成功完成
+    // ========== Status code constants ==========
+    // Lua operation completed successfully
     LUA_OK: number;
-    // Lua 协程 yield（让出执行权）
+    // Lua coroutine yield (yield execution control)
     LUA_YIELD: number;
-    // 运行错误
+    // Runtime error
     LUA_ERRRUN: number;
-    // 语法错误
+    // Syntax error
     LUA_ERRSYNTAX: number;
-    // 内存分配错误
+    // Memory allocation error
     LUA_ERRMEM: number;
-    // 运行时错误（用于 luaL_error）
+    // Runtime error (for luaL_error)
     LUA_ERRERR: number;
-    // 文件错误
+    // File error
     LUA_ERRFILE: number;
-    // 多返回值标记（表示返回所有可变参数）
+    // Multiple return value marker (indicates return all variadic parameters)
     LUA_MULTRET: number;
 
-    // ========== 注册表索引 ==========
-    // 注册表是一个特殊的 Lua 表，用于 C 代码存储数据
-    // 负索引表示从栈顶开始计算
+    // ========== Registry indices ==========
+    // Registry is a special Lua table for C code to store data
+    // Negative indices are calculated from the top of the stack
     LUA_REGISTRYINDEX: number;
-    // 主线程在注册表中的索引
+    // Main thread index in registry
     LUA_RIDX_MAINTHREAD: number;
 
-    // ========== Lua 类型常量 (lua_type 返回值) ==========
-    LUA_TBOOLEAN: number;          // 布尔类型
-    LUA_TFUNCTION: number;        // 函数类型（C函数或Lua函数）
-    LUA_TLIGHTUSERDATA: number;   // 轻量用户数据（指针）
-    LUA_TNIL: number;             // nil 空值
-    LUA_TNONE: number;            // 无效索引（比任何类型都"轻"）
-    LUA_TNUMBER: number;          // 数字类型
-    LUA_TSTRING: number;          // 字符串类型
-    LUA_TTABLE: number;           // 表（关联数组）
-    LUA_TTHREAD: number;          // 协程/线程
-    LUA_TUSERDATA: number;        // 用户数据（有元表的指针）
+    // ========== Lua type constants (lua_type return values) ==========
+    LUA_TBOOLEAN: number;          // boolean type
+    LUA_TFUNCTION: number;        // function type (C function or Lua function)
+    LUA_TLIGHTUSERDATA: number;   // light userdata (pointer)
+    LUA_TNIL: number;             // nil value
+    LUA_TNONE: number;            // invalid index (lighter than any type)
+    LUA_TNUMBER: number;          // number type
+    LUA_TSTRING: number;          // string type
+    LUA_TTABLE: number;           // table (associative array)
+    LUA_TTHREAD: number;          // coroutine/thread
+    LUA_TUSERDATA: number;        // userdata (pointer with metatable)
 
-    // ========== 栈操作函数 ==========
-    // 获取栈顶索引（即栈上元素数量）
+    // ========== Stack operations ==========
+    // Get stack top index (i.e., number of elements on stack)
     lua_gettop(L: lua_State): number;
-    // 设置栈顶（可正可负）
+    // Set stack top (can be positive or negative)
     lua_settop(L: lua_State, idx: number): void;
-    // 弹出 n 个元素
+    // Pop n elements
     lua_pop(L: lua_State, n: number): void;
-    // 将索引 idx 处的值复制到栈顶
+    // Copy value at index idx to top of stack
     lua_pushvalue(L: lua_State, idx: number): void;
-    // 旋转栈上元素（正值顺时针，负值逆时针）
+    // Rotate stack elements (positive = clockwise, negative = counterclockwise)
     lua_rotate(L: lua_State, idx: number, n: number): void;
-    // 从栈中删除索引 idx 处的元素
+    // Remove element at index idx from stack
     lua_remove(L: lua_State, idx: number): void;
-    // 获取栈上索引 idx 处值的类型
+    // Get type of value at index idx on stack
     lua_type(L: lua_State, idx: number): number;
-    // 获取类型名称字符串
+    // Get type name string
     lua_typename(L: lua_State, t: number): string;
 
-    // ========== 推入元素到栈 ==========
-    // 推入 nil 值
+    // ========== Push elements to stack ==========
+    // Push nil value
     lua_pushnil(L: lua_State): void;
-    // 推入数字
+    // Push number
     lua_pushnumber(L: lua_State, n: number): void;
-    // 推入布尔值（非零=true，零=false）
+    // Push boolean (non-zero = true, zero = false)
     lua_pushboolean(L: lua_State, b: number): void;
-    // 推入字符串（C 字符串）
+    // Push string (C string)
     lua_pushstring(L: lua_State, s: string): void;
-    // 推入字符串（字面量）
+    // Push string (literal)
     lua_pushliteral(L: lua_State, s: string): void;
-    // 推入 C 函数
-    // C 函数签名：接收 lua_State，返回返回值个数
+    // Push C function
+    // C function signature: receives lua_State, returns number of return values
     lua_pushcfunction(L: lua_State, f: (L: lua_State) => number): void;
-    // 推入整数
+    // Push integer
     lua_pushinteger(L: lua_State, n: number): void;
-    // 推入轻量用户数据（指针）
+    // Push light userdata (pointer)
     lua_pushlightuserdata(L: lua_State, p: unknown): void;
 
-    // ========== 创建表 ==========
+    // ========== Create tables ==========
     lua_createtable(L: lua_State, n: number, k: number): void;
 
-    // ========== 从栈读取值 ==========
-    // 获取全局表中的值
+    // ========== Read values from stack ==========
+    // Get value from global table
     lua_gettable(L: lua_State, idx: number): number;
-    // 获取表/全局空间中字段值
-    // 等价于 push L[idx].k
+    // Get field value from table/global space
+    // Equivalent to push L[idx].k
     lua_getfield(L: lua_State, idx: number, k: string): number;
-    // 获取全局变量
+    // Get global variable
     lua_getglobal(L: lua_State, name: string): number;
-    // 从表中获取原始值（raw get，不调用元方法）
-    // 获取 table[idx][n] 处的值
+    // Get raw value from table (raw get, does not call metamethods)
+    // Get value at table[idx][n]
     lua_rawgeti(L: lua_State, idx: number, n: number): number;
-    // 从表中获取原始值（通过指针 key）
+    // Get raw value from table (via pointer key)
     lua_rawgetp(L: lua_State, idx: number, p: unknown): number;
-    // 再次获取栈顶元素数量（重复定义）
+    // Get stack top element count again (repeated definition)
     lua_rawseti(L: lua_State, idx: number, n: number): void;
-    // 从表中设置原始值（通过指针 key）
+    // Set raw value in table (via pointer key)
     lua_rawsetp(L: lua_State, idx: number, p: unknown): void;
-    // 获取元表
+    // Get metatable
     lua_gettop(L: lua_State): number;
-    // 判断是否为表
+    // Check if is table
     lua_istable(L: lua_State, idx: number): boolean;
 
-    // ========== 设置栈上的值 ==========
-    // 设置表/全局空间中的字段
-    // 弹出 key 和 value，设置 L[idx].key = value
+    // ========== Set values on stack ==========
+    // Set field in table/global space
+    // Pops key and value, sets L[idx].key = value
     lua_settable(L: lua_State, idx: number): void;
-    // 设置表/全局空间中的字段（显式指定 key）
+    // Set field in table/global space (explicit key)
     lua_setfield(L: lua_State, idx: number, k: string): void;
-    // 设置全局变量
+    // Set global variable
     lua_setglobal(L: lua_State, s: string): void;
-    // 设置表中的原始值（通过指针 key）
+    // Set raw value in table (via pointer key)
     lua_rawsetp(L: lua_State, idx: number, p: unknown): void;
 
-    // ========== 类型转换（从栈读取） ==========
-    // 转为布尔值（非零=true，零=false）
+    // ========== Type conversion (from stack) ==========
+    // Convert to boolean (non-zero = true, zero = false)
     lua_toboolean(L: lua_State, idx: number): number;
-    // 转为数字
+    // Convert to number
     lua_tonumber(L: lua_State, idx: number): number;
-    // 转为整数
+    // Convert to integer
     lua_tointeger(L: lua_State, idx: number): number;
-    // 转为 Lua 字符串（C 风格，null 结尾）
-    // 返回 Uint8Array（fengari 特有），需用 to_jsstring 转换
+    // Convert to Lua string (C style, null-terminated)
+    // Returns Uint8Array (fengari specific), use to_jsstring to convert
     lua_tostring(L: lua_State, idx: number): Uint8Array | null;
-    // 转为用户数据指针
+    // Convert to userdata pointer
     lua_touserdata(L: lua_State, idx: number): unknown;
-    // 转为线程/协程
+    // Convert to thread/coroutine
     lua_tothread(L: lua_State, idx: number): lua_State | null;
-    // 判断是否为 nil
+    // Check if is nil
     lua_isnil(L: lua_State, idx: number): number;
-    // 判断是否为 C 函数
+    // Check if is C function
     lua_iscfunction(L: lua_State, idx: number): number;
-    // 判断是否为函数
+    // Check if is function
     lua_isfunction(L: lua_State, idx: number): number;
-    // 判断是否为轻量用户数据
+    // Check if is light userdata
     lua_islightuserdata(L: lua_State, idx: number): number;
-    // 判断是否为表
+    // Check if is table
     lua_istable(L: lua_State, idx: number): number;
-    // 判断是否为线程/协程
+    // Check if is thread/coroutine
     lua_isthread(L: lua_State, idx: number): number;
-    // 判断是否为字符串
+    // Check if is string
     lua_isstring(L: lua_State, idx: number): number;
-    // 判断是否为数字
+    // Check if is number
     lua_isnumber(L: lua_State, idx: number): number;
-    // 判断是否为布尔值
+    // Check if is boolean
     lua_isboolean(L: lua_State, idx: number): number;
 
-    // ========== 调用与执行 ==========
-    // 调用函数
-    // nargs: 参数个数，nresults: 返回值个数（-1 表示全部）
+    // ========== Call and execution ==========
+    // Call function
+    // nargs: number of arguments, nresults: number of return values (-1 means all)
     lua_call(L: lua_State, nargs: number, nresults: number): void;
-    // 受保护调用（pcall）
-    // errfunc=0 表示无错误处理函数
-    // 返回 LUA_OK 表示成功，其他表示错误
+    // Protected call (pcall)
+    // errfunc=0 means no error handler function
+    // Returns LUA_OK on success, other values indicate error
     lua_pcall(L: lua_State, nargs: number, nresults: number, errfunc: number): number;
-    // 协程 yield（让出执行权）
-    // nresults: 向 resume 传递的结果个数
+    // Coroutine yield (yield execution control)
+    // nresults: number of results to pass to resume
     lua_yield(L: lua_State, nresults: number): number;
-    // 恢复协程执行
-    // from=null 表示从主线程恢复
-    // nresults: yield 传递的参数个数
-    // 返回 LUA_OK（完成）或 LUA_YIELD（再次 yield）
+    // Resume coroutine execution
+    // from=null means resume from main thread
+    // nresults: number of arguments from yield
+    // Returns LUA_OK (completed) or LUA_YIELD (yield again)
     lua_resume(L: lua_State, from: lua_State | null, nresults: number): number;
 
-    // 创建新线程/协程
+    // Create new thread/coroutine
     lua_newthread(L: lua_State): lua_State;
 
-    // ========== Fengari 特有函数 ==========
-    // 将 Lua 值转为 JS 字符串
+    // ========== Fengari-specific functions ==========
+    // Convert Lua value to JS string
     lua_tojsstring(L: lua_State, idx: number): string;
-    // 将 Lua 值转为 JS 代理对象
+    // Convert Lua value to JS proxy object
     lua_toproxy(L: lua_State, idx: number): (L: lua_State) => void;
-    // 判断是否为 JS 代理对象
+    // Check if is JS proxy object
     lua_isproxy(L: lua_State, value: unknown): boolean;
-    // 设置原生错误处理器
+    // Set native error handler
     lua_atnativeerror(L: lua_State, f: (L: lua_State) => number): void;
-    // 分配新的用户数据块
+    // Allocate new userdata block
     lua_newuserdata(L: lua_State): unknown;
   };
 
   export const lauxlib: {
-    // ========== 状态管理 ==========
-    // 创建新的 Lua 状态（虚拟机实例）
+    // ========== State management ==========
+    // Create new Lua state (VM instance)
     luaL_newstate(): lua_State;
-    // 打开所有标准库（base, table, string, math, io, os, debug, package）
+    // Open all standard libraries (base, table, string, math, io, os, debug, package)
     luaL_openlibs(L: lua_State): void;
 
-    // ========== 加载与编译 ==========
-    // 加载 Lua 代码字符串
-    // 成功返回 LUA_OK，语法错误返回 LUA_ERRSYNTAX，其他错误返回对应错误码
+    // ========== Load and compile ==========
+    // Load Lua code string
+    // Returns LUA_OK on success, LUA_ERRSYNTAX on syntax error, other error codes on other errors
     luaL_loadstring(L: lua_State, s: string): number;
-    // 执行 Lua 代码字符串（相当于 load + pcall）
+    // Execute Lua code string (equivalent to load + pcall)
     luaL_dostring(L: lua_State, s: string): number;
-    // 加载缓冲区中的 Lua 代码
+    // Load Lua code from buffer
     luaL_loadbuffer(L: lua_State, s: string, sz: number, name: string): number;
-    // 读取字符串参数（索引 n）
+    // Read string argument (index n)
     luaL_checkstring(L: lua_State, n: number): Uint8Array;
-    // 读取数字参数
+    // Read number argument
     luaL_checknumber(L: lua_State, n: number): number;
-    // 读取整数参数
+    // Read integer argument
     luaL_checkinteger(L: lua_State, n: number): number;
-    // 读取任意类型参数（如果不是指定类型则报错）
+    // Read any type argument (throws error if not specified type)
     luaL_checkany(L: lua_State, n: number): void;
-    // 读取选项参数（用于 luaL_checkoption）
+    // Read option argument (for luaL_checkoption)
     luaL_checkoption(L: lua_State, n: number, def: string, list: string[]): number;
-    // 确保栈空间足够
+    // Ensure enough stack space
     luaL_checkstack(L: lua_State, n: number, msg: string | null): void;
-    // 检查用户数据是否是指定类型
+    // Check if userdata is of specified type
     luaL_checkudata(L: lua_State, n: number, tname: string): unknown;
-    // 参数错误（触发 Lua error）
+    // Argument error (triggers Lua error)
     luaL_argerror(L: lua_State, n: number, msg: string): number;
-    // 生成错误（使用 luaL_error 的函数应返回错误码）
+    // Generate error (functions using luaL_error should return error code)
     luaL_error(L: lua_State, msg: string): number;
-    // 获取元表字段
-    // 如果对象有元表且元表有字段 e，返回 1 并推入值，否则返回 0
+    // Get metatable field
+    // If object has metatable and metatable has field e, return 1 and push value, otherwise return 0
     luaL_getmetafield(L: lua_State, obj: number, e: string): number;
 
-    // ========== 表/模块工具 ==========
-    // 创建一个新表并注册为模块（用于 luaL_newlib）
+    // ========== Table/module utilities ==========
+    // Create a new table and register as module (for luaL_newlib)
     luaL_newlib(L: lua_State, l: Record<string, (L: lua_State) => number>): void;
-    // 创建新元表
-    // 成功返回 1，表中已存在返回 0
+    // Create new metatable
+    // Returns 1 on success, 0 if table already exists
     luaL_newmetatable(L: lua_State, tname: string): number;
-    // 加载模块（requiref）
-    // glb=1 表示同时设置为全局变量
+    // Load module (requiref)
+    // glb=1 means also set as global variable
     luaL_requiref(L: lua_State, modname: string, fn: (L: lua_State) => number, glb: number): void;
-    // 注册一组 C 函数（用于库定义）
+    // Register a group of C functions (for library definition)
     luaL_setfuncs(L: lua_State, l: Record<string, (L: lua_State) => number>, nup: number): void;
-    // 设置元表
+    // Set metatable
     luaL_setmetatable(L: lua_State, tname: string): void;
-    // 测试用户数据类型（不报错版本）
+    // Test userdata type (non-error version)
     luaL_testudata(L: lua_State, n: number, tname: string): unknown;
-    // 获取对象的字符串表示
+    // Get string representation of object
     luaL_tolstring(L: lua_State, idx: number): Uint8Array;
 
 
@@ -241,40 +241,40 @@ declare module 'fengari' {
   };
 
   export const lualib: {
-    // 打开所有标准库
+    // Open all standard libraries
     luaL_openlibs(L: lua_State): void;
-    // 打开基础库（print, error, pairs, etc.）
+    // Open base library (print, error, pairs, etc.)
     luaopen_base(L: lua_State): number;
-    // 打开数学库
+    // Open math library
     luaopen_math(L: lua_State): number;
-    // 打开字符串库
+    // Open string library
     luaopen_string(L: lua_State): number;
-    // 打开表库
+    // Open table library
     luaopen_table(L: lua_State): number;
-    // 打开 IO 库
+    // Open IO library
     luaopen_io(L: lua_State): number;
-    // 打开 OS 库
+    // Open OS library
     luaopen_os(L: lua_State): number;
-    // 打开包库
+    // Open package library
     luaopen_package(L: lua_State): number;
-    // 打开调试库
+    // Open debug library
     luaopen_debug(L: lua_State): number;
-    // 打开协程库
+    // Open coroutine library
     luaopen_coroutine(L: lua_State): number;
   };
 
-  // ========== 工具函数 ==========
-  // 将 JS 字符串转为 Lua 字符串（Uint8Array）
-  // Lua 内部使用 UTF-8 编码的 Uint8Array
+  // ========== Utility functions ==========
+  // Convert JS string to Lua string (Uint8Array)
+  // Lua internally uses UTF-8 encoded Uint8Array
   export function to_luastring(s: string): Uint8Array;
-  // 将 Lua 字符串（Uint8Array）转为 JS 字符串
+  // Convert Lua string (Uint8Array) to JS string
   export function to_jsstring(s: Uint8Array | null): string;
-  // 将 Lua 字符串转为 URI 编码的 JS 字符串
+  // Convert Lua string to URI-encoded JS string
   export function to_uristring(s: Uint8Array | null): string;
-  // 获取 Lua 字符串的 Uint8Array
+  // Get Uint8Array of Lua string
   export function luastring_of(s: Uint8Array): Uint8Array;
 
-  // ========== 版本信息 ==========
+  // ========== Version info ==========
   export const FENGARI_AUTHORS: string;
   export const FENGARI_COPYRIGHT: string;
   export const FENGARI_RELEASE: string;

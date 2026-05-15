@@ -2,18 +2,17 @@
   "manifest_version": 3,
   "name": "Script Runner",
   "version": "1.0.0",
-  "description": "在 Side Panel 中编写和运行脚本",
+  "description": "Write and run scripts in the Side Panel",
   "permissions": [
     "sidePanel",
     "scripting",
-    "activeTab",
-    "ai"
+    "activeTab"
   ],
   "host_permissions": [
     "<all_urls>"
   ],
   "action": {
-    "default_title": "打开 Script Runner"
+    "default_title": "Open Script Runner"
   },
   "side_panel": {
     "default_path": "sidepanel/sidepanel.html"

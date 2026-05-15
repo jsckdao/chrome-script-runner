@@ -3,10 +3,10 @@ import { defineAsyncFunction } from "./base";
 
 export default defineAsyncFunction({
   name: 'navigateTabUrl',
-  description: '使指定标签页跳转到指定 URL',
+  description: 'Navigate the specified tab to the given URL',
   params: z.tuple([
-    z.number().describe('标签页 ID'),
-    z.string().describe('目标 URL')
+    z.number().describe('Tab ID'),
+    z.string().describe('Target URL')
   ]),
   execute: async ([tabId, url]) => {
     await chrome.tabs.update(tabId, { url });

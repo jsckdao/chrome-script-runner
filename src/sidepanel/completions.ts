@@ -2,102 +2,102 @@ import { Completion, CompletionContext, CompletionResult } from '@codemirror/aut
 import { portManager } from './port-manager';
 
 const defaultCompletions: Completion[] = [
-  // Lua 关键字
-  { label: 'and', type: 'keyword', detail: '逻辑与' },
-  { label: 'break', type: 'keyword', detail: '跳出循环' },
-  { label: 'do', type: 'keyword', detail: '代码块开始' },
-  { label: 'else', type: 'keyword', detail: '否则分支' },
-  { label: 'elseif', type: 'keyword', detail: '否则如果' },
-  { label: 'end', type: 'keyword', detail: '代码块结束' },
-  { label: 'false', type: 'keyword', detail: '布尔值假' },
-  { label: 'for', type: 'keyword', detail: 'for 循环' },
-  { label: 'function', type: 'keyword', detail: '函数定义' },
-  { label: 'if', type: 'keyword', detail: '条件判断' },
-  { label: 'in', type: 'keyword', detail: '迭代器配合' },
-  { label: 'local', type: 'keyword', detail: '局部变量' },
-  { label: 'nil', type: 'keyword', detail: '空值' },
-  { label: 'not', type: 'keyword', detail: '逻辑非' },
-  { label: 'or', type: 'keyword', detail: '逻辑或' },
-  { label: 'repeat', type: 'keyword', detail: '重复循环' },
-  { label: 'return', type: 'keyword', detail: '返回值' },
-  { label: 'then', type: 'keyword', detail: '条件分支' },
-  { label: 'true', type: 'keyword', detail: '布尔值真' },
-  { label: 'until', type: 'keyword', detail: '循环结束条件' },
-  { label: 'while', type: 'keyword', detail: 'while 循环' },
+  // Lua keywords
+  { label: 'and', type: 'keyword', detail: 'logical AND' },
+  { label: 'break', type: 'keyword', detail: 'exit loop' },
+  { label: 'do', type: 'keyword', detail: 'begin block' },
+  { label: 'else', type: 'keyword', detail: 'else branch' },
+  { label: 'elseif', type: 'keyword', detail: 'else if' },
+  { label: 'end', type: 'keyword', detail: 'end block' },
+  { label: 'false', type: 'keyword', detail: 'boolean false' },
+  { label: 'for', type: 'keyword', detail: 'for loop' },
+  { label: 'function', type: 'keyword', detail: 'function definition' },
+  { label: 'if', type: 'keyword', detail: 'conditional' },
+  { label: 'in', type: 'keyword', detail: 'iterator with for loop' },
+  { label: 'local', type: 'keyword', detail: 'local variable' },
+  { label: 'nil', type: 'keyword', detail: 'null value' },
+  { label: 'not', type: 'keyword', detail: 'logical NOT' },
+  { label: 'or', type: 'keyword', detail: 'logical OR' },
+  { label: 'repeat', type: 'keyword', detail: 'repeat loop' },
+  { label: 'return', type: 'keyword', detail: 'return value' },
+  { label: 'then', type: 'keyword', detail: 'conditional branch' },
+  { label: 'true', type: 'keyword', detail: 'boolean true' },
+  { label: 'until', type: 'keyword', detail: 'loop end condition' },
+  { label: 'while', type: 'keyword', detail: 'while loop' },
 
-  // Lua 全局函数
-  { label: 'print', type: 'function', detail: '打印输出' },
-  { label: 'pairs', type: 'function', detail: '键值迭代 (for k,v in pairs(t))' },
-  { label: 'ipairs', type: 'function', detail: '数组迭代 (for i,v in ipairs(t))' },
-  { label: 'type', type: 'function', detail: '获取变量类型' },
-  { label: 'tostring', type: 'function', detail: '转换为字符串' },
-  { label: 'tonumber', type: 'function', detail: '转换为数字' },
-  { label: 'pcall', type: 'function', detail: '安全调用函数' },
-  { label: 'error', type: 'function', detail: '抛出错误' },
-  { label: 'assert', type: 'function', detail: '断言检查' },
-  { label: 'select', type: 'function', detail: '可变参数操作' },
-  { label: 'next', type: 'function', detail: '表迭代器' },
+  // Lua global functions
+  { label: 'print', type: 'function', detail: 'print output' },
+  { label: 'pairs', type: 'function', detail: 'key-value iteration (for k,v in pairs(t))' },
+  { label: 'ipairs', type: 'function', detail: 'array iteration (for i,v in ipairs(t))' },
+  { label: 'type', type: 'function', detail: 'get variable type' },
+  { label: 'tostring', type: 'function', detail: 'convert to string' },
+  { label: 'tonumber', type: 'function', detail: 'convert to number' },
+  { label: 'pcall', type: 'function', detail: 'safe call function' },
+  { label: 'error', type: 'function', detail: 'throw error' },
+  { label: 'assert', type: 'function', detail: 'assertion check' },
+  { label: 'select', type: 'function', detail: 'vararg operation' },
+  { label: 'next', type: 'function', detail: 'table iterator' },
 
-  // 字符串库 (string.*)
-  { label: 'string.sub', type: 'method', detail: '字符串截取 s:sub(i, j)' },
-  { label: 'string.len', type: 'method', detail: '字符串长度' },
-  { label: 'string.find', type: 'method', detail: '查找子串 string.find(s, pattern)' },
-  { label: 'string.match', type: 'method', detail: '匹配捕获 string.match(s, pattern)' },
-  { label: 'string.gmatch', type: 'method', detail: '全局匹配迭代' },
-  { label: 'string.gsub', type: 'method', detail: '全局替换' },
-  { label: 'string.rep', type: 'method', detail: '重复字符串 string.rep(s, n)' },
-  { label: 'string.reverse', type: 'method', detail: '反转字符串' },
-  { label: 'string.lower', type: 'method', detail: '转小写' },
-  { label: 'string.upper', type: 'method', detail: '转大写' },
-  { label: 'string.format', type: 'method', detail: '格式化字符串' },
-  { label: 'string.char', type: 'method', detail: '数字转字符' },
-  { label: 'string.byte', type: 'method', detail: '字符转数字' },
+  // String library (string.*)
+  { label: 'string.sub', type: 'method', detail: 'substring s:sub(i, j)' },
+  { label: 'string.len', type: 'method', detail: 'string length' },
+  { label: 'string.find', type: 'method', detail: 'find substring string.find(s, pattern)' },
+  { label: 'string.match', type: 'method', detail: 'match capture string.match(s, pattern)' },
+  { label: 'string.gmatch', type: 'method', detail: 'global match iteration' },
+  { label: 'string.gsub', type: 'method', detail: 'global replace' },
+  { label: 'string.rep', type: 'method', detail: 'repeat string string.rep(s, n)' },
+  { label: 'string.reverse', type: 'method', detail: 'reverse string' },
+  { label: 'string.lower', type: 'method', detail: 'to lowercase' },
+  { label: 'string.upper', type: 'method', detail: 'to uppercase' },
+  { label: 'string.format', type: 'method', detail: 'format string' },
+  { label: 'string.char', type: 'method', detail: 'number to character' },
+  { label: 'string.byte', type: 'method', detail: 'character to number' },
 
-  // 表库 (table.*)
-  { label: 'table.insert', type: 'method', detail: '插入元素 table.insert(t, pos, val)' },
-  { label: 'table.remove', type: 'method', detail: '删除元素 table.remove(t, pos)' },
-  { label: 'table.concat', type: 'method', detail: '连接表元素 table.concat(t, sep)' },
-  { label: 'table.sort', type: 'method', detail: '排序 table.sort(t, comp)' },
-  { label: 'table.pack', type: 'method', detail: '打包为表 table.pack(...args)' },
-  { label: 'table.unpack', type: 'method', detail: '解包表 table.unpack(t, i, j)' },
+  // Table library (table.*)
+  { label: 'table.insert', type: 'method', detail: 'insert element table.insert(t, pos, val)' },
+  { label: 'table.remove', type: 'method', detail: 'remove element table.remove(t, pos)' },
+  { label: 'table.concat', type: 'method', detail: 'concat table elements table.concat(t, sep)' },
+  { label: 'table.sort', type: 'method', detail: 'sort table.sort(t, comp)' },
+  { label: 'table.pack', type: 'method', detail: 'pack to table table.pack(...args)' },
+  { label: 'table.unpack', type: 'method', detail: 'unpack table table.unpack(t, i, j)' },
 
-  // 数学库 (math.*)
-  { label: 'math.abs', type: 'method', detail: '绝对值' },
-  { label: 'math.floor', type: 'method', detail: '向下取整' },
-  { label: 'math.ceil', type: 'method', detail: '向上取整' },
-  { label: 'math.max', type: 'method', detail: '最大值 math.max(a, b, ...)' },
-  { label: 'math.min', type: 'method', detail: '最小值 math.min(a, b, ...)' },
-  { label: 'math.random', type: 'method', detail: '随机数 math.random(m, n)' },
-  { label: 'math.sqrt', type: 'method', detail: '平方根' },
-  { label: 'math.pow', type: 'method', detail: '幂运算 math.pow(x, y)' },
-  { label: 'math.log', type: 'method', detail: '对数' },
-  { label: 'math.sin', type: 'method', detail: '正弦' },
-  { label: 'math.cos', type: 'method', detail: '余弦' },
-  { label: 'math.tan', type: 'method', detail: '正切' },
-  { label: 'math.pi', type: 'constant', detail: '圆周率 3.14159...' },
-  { label: 'math.huge', type: 'constant', detail: '无穷大' },
+  // Math library (math.*)
+  { label: 'math.abs', type: 'method', detail: 'absolute value' },
+  { label: 'math.floor', type: 'method', detail: 'floor' },
+  { label: 'math.ceil', type: 'method', detail: 'ceiling' },
+  { label: 'math.max', type: 'method', detail: 'maximum math.max(a, b, ...)' },
+  { label: 'math.min', type: 'method', detail: 'minimum math.min(a, b, ...)' },
+  { label: 'math.random', type: 'method', detail: 'random number math.random(m, n)' },
+  { label: 'math.sqrt', type: 'method', detail: 'square root' },
+  { label: 'math.pow', type: 'method', detail: 'power math.pow(x, y)' },
+  { label: 'math.log', type: 'method', detail: 'logarithm' },
+  { label: 'math.sin', type: 'method', detail: 'sine' },
+  { label: 'math.cos', type: 'method', detail: 'cosine' },
+  { label: 'math.tan', type: 'method', detail: 'tangent' },
+  { label: 'math.pi', type: 'constant', detail: 'pi 3.14159...' },
+  { label: 'math.huge', type: 'constant', detail: 'infinity' },
 
-  // 常见 API 前缀提示
-  { label: 'browser.', type: 'namespace', detail: '浏览器 API 命名空间' },
-  { label: 'log.', type: 'namespace', detail: '日志 API 命名空间' },
+  // Common API prefix hints
+  { label: 'browser.', type: 'namespace', detail: 'browser API namespace' },
+  { label: 'log.', type: 'namespace', detail: 'log API namespace' },
 ];
 
-// 缓存补全结果
+// Cache completion results
 let cachedCompletions: Completion[] | null = null;
 let cachedCompletionsLoaded = false;
 
-// 请求补全数据
+// Request completion data
 function fetchCompletions(): void {
   if (!portManager.isConnected()) return;
 
   const sent = portManager.postMessage({ type: 'getCompletions', requestId: crypto.randomUUID() });
   if (!sent) {
-    // 连接未就绪，延迟重试
+    // Connection not ready, retry with delay
     setTimeout(fetchCompletions, 1000);
   }
 }
 
-// 使用 portManager 的消息监听
+// Use portManager message listener
 portManager.onMessage((message) => {
   if (message.type === 'completionsResponse') {
     cachedCompletions = message.completions || [];
@@ -105,7 +105,7 @@ portManager.onMessage((message) => {
   }
 });
 
-// 初始化连接和请求补全
+// Initialize connection and request completions
 portManager.connect();
 fetchCompletions();
 
@@ -115,7 +115,7 @@ export async function chromeAPICompletions(context: CompletionContext): Promise<
     return null;
   }
 
-  // 如果还没收到响应，等待一下
+  // Wait for response if not yet received
   if (!cachedCompletionsLoaded) {
     await new Promise(resolve => setTimeout(resolve, 100));
   }

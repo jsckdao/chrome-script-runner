@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* VS Code 风格深色主题 */
+/* VS Code style dark theme */
 @theme {
   --color-bg-primary: #1e1e1e;
   --color-bg-secondary: #252526;
@@ -18,7 +18,7 @@
   --color-console-empty: #606060;
 }
 
-/* CodeMirror 主题覆盖 */
+/* CodeMirror theme overrides */
 .cm-editor {
   background: var(--color-bg-primary) !important;
   height: 100%;
@@ -71,7 +71,7 @@
   outline: none !important;
 }
 
-/* CodeMirror 自动补全弹层 - 黑暗模式 */
+/* CodeMirror autocomplete popup - dark theme */
 .cm-tooltip {
   background: var(--color-bg-secondary) !important;
   border: 1px solid var(--color-border) !important;

@@ -6,6 +6,7 @@ import ConsoleOutput from './components/ConsoleOutput.vue';
 import ScriptSelector from './components/ScriptSelector.vue';
 import { usePortManager, type LogEntry } from './composables/usePortManager';
 import { Script, scriptStore } from './script-store';
+import { exampleCode } from './editor';
 
 const scripts = ref<Script[]>([]);
 const currentScriptId = ref<string>('');
@@ -15,7 +16,7 @@ const isRunning = ref(false);
 const currentTabId = ref<number | null>(null);
 const currentRequestId = ref<string | null>(null);
 
-const { isConnected, onMessage, postMessage, connect } = usePortManager();
+const { isConnected, onMessage, postMessage } = usePortManager();
 
 let idCounter = 0;
 
@@ -27,7 +28,7 @@ function addConsoleEntry(level: LogEntry['level'], args: any[]) {
     timestamp: new Date(),
   });
 
-  // 限制最大条目数
+  // Limit max entries
   if (consoleEntries.value.length > 500) {
     consoleEntries.value = consoleEntries.value.slice(-500);
   }
@@ -38,12 +39,12 @@ async function loadScripts() {
     const allScripts = await scriptStore.getAll();
     scripts.value = allScripts;
   } catch (err) {
-    console.error('加载脚本失败:', err);
+    console.error('Failed to load scripts:', err);
   }
 }
 
 async function handleScriptSelect(scriptId: string) {
-  // 保存当前脚本
+  // Save current script
   if (currentScriptId.value) {
     await saveCurrentScript();
   }
@@ -56,13 +57,13 @@ async function handleScriptSelect(scriptId: string) {
 }
 
 async function handleCreateScript() {
-  const name = prompt('请输入脚本名称：');
+  const name = prompt('Enter script name:');
   if (!name) return;
 
   const script: Script = {
     id: crypto.randomUUID(),
     name: name.trim(),
-    content: '',
+    content: exampleCode,
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };
@@ -90,7 +91,7 @@ async function saveCurrentScript() {
   const script = scripts.value.find((s) => s.id === currentScriptId.value);
   if (!script) return;
 
-  // 创建纯数据对象以避免 IDB 克隆错误
+  // Create plain object to avoid IDB clone error
   const plainScript: Script = {
     id: script.id,
     name: script.name,
@@ -101,7 +102,7 @@ async function saveCurrentScript() {
   await scriptStore.save(plainScript);
 }
 
-// 监听选中脚本变化,直接更新编辑器内容
+// Watch for script selection changes, update editor content directly
 watch(currentScriptId, (newId) => {
   if (newId) {
     const script = scripts.value.find((s) => s.id === newId);
@@ -113,23 +114,23 @@ watch(currentScriptId, (newId) => {
 
 async function runScript() {
   if (currentTabId.value === null) {
-    addConsoleEntry('error', ['未找到活动标签页']);
+    addConsoleEntry('error', ['No active tab found']);
     return;
   }
 
   if (!isConnected.value) {
-    addConsoleEntry('warn', ['正在等待连接...']);
+    addConsoleEntry('warn', ['Waiting for connection...']);
     return;
   }
 
   const script = editorContent.value;
   if (!script.trim()) {
-    addConsoleEntry('warn', ['请输入脚本']);
+    addConsoleEntry('warn', ['Please enter a script']);
     return;
   }
 
   isRunning.value = true;
-  addConsoleEntry('info', ['--- 开始执行 ---']);
+  addConsoleEntry('info', ['--- Start execution ---']);
 
   const requestId = crypto.randomUUID();
   currentRequestId.value = requestId;
@@ -142,7 +143,7 @@ async function runScript() {
   });
 
   if (!sent) {
-    addConsoleEntry('error', ['发送消息失败']);
+    addConsoleEntry('error', ['Failed to send message']);
     isRunning.value = false;
   }
 }
@@ -165,7 +166,7 @@ async function getCurrentTab() {
       currentTabId.value = tab.id;
     }
   } catch (err) {
-    addConsoleEntry('error', ['获取当前标签页失败:', String(err)]);
+    addConsoleEntry('error', ['Failed to get current tab:', String(err)]);
   }
 }
 
@@ -175,7 +176,7 @@ onMounted(async () => {
   await loadScripts();
   await getCurrentTab();
 
-  // 如果有脚本，自动选中第一个
+  // Auto-select first script if available
   if (scripts.value.length > 0 && !currentScriptId.value) {
     await handleScriptSelect(scripts.value[0].id);
   }
@@ -189,7 +190,7 @@ onMounted(async () => {
       } else if (message.type === 'executeResult') {
         const { result, error } = message;
         if (error) {
-          addConsoleEntry('error', ['执行错误:', error]);
+          addConsoleEntry('error', ['Execution error:', error]);
         } else if (result !== undefined) {
           addConsoleEntry('result', [result]);
         }
@@ -225,13 +226,13 @@ onUnmounted(() => {
         :disabled="isRunning"
         @click="runScript"
       >
-        ▶ 运行
+        ▶ Run
       </button>
       <button
         class="bg-[#3c3c3c] text-[#d4d4d4] px-3 py-1.5 border-none rounded text-xs font-medium cursor-pointer transition-colors hover:bg-[#4a4a4a]"
         @click="clearConsole"
       >
-        清除
+        Clear
       </button>
     </div>
 
@@ -254,7 +255,7 @@ onUnmounted(() => {
       <!-- Console Container -->
       <SplitItem class="overflow-hidden flex flex-col">
         <div class="bg-[#252526] border-b border-[#3c3c3c] px-3 py-1.5 flex items-center justify-between flex-shrink-0">
-          <span class="text-xs font-medium text-[#808080]">控制台</span>
+          <span class="text-xs font-medium text-[#808080]">Console</span>
         </div>
         <ConsoleOutput :entries="consoleEntries" />
       </SplitItem>

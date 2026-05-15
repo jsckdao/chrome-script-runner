@@ -16,10 +16,10 @@ async function sendToContentScript(tabId: number, type: string, payload: any): P
 
 export default defineAsyncFunction({
   name: 'click',
-  description: '在指定标签页中点击元素',
+  description: 'Click an element in the specified tab',
   params: z.tuple([
-    z.number().describe('标签页 ID'),
-    z.string().describe('CSS 选择器')
+    z.number().describe('Tab ID'),
+    z.string().describe('CSS selector')
   ]),
   execute: async ([tabId, selector]) => {
     const result = await sendToContentScript(tabId, 'click', { selector });

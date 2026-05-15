@@ -17,7 +17,7 @@ export class Console {
   }
 
   private renderEmpty(): void {
-    this.container.innerHTML = '<div class="console-empty">控制台暂无输出</div>';
+    this.container.innerHTML = '<div class="console-empty">Console is empty</div>';
   }
 
   private render(): void {
@@ -81,7 +81,7 @@ export class Console {
 
     this.entries.push(entry);
 
-    // 限制最大条目数
+    // Limit max entries
     if (this.entries.length > this.maxEntries) {
       this.entries = this.entries.slice(-this.maxEntries);
     }

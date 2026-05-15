@@ -1,4 +1,4 @@
-// Port 连接管理器 - 单例模式
+// Port connection manager - singleton pattern
 type MessageHandler = (message: any) => void;
 type DisconnectHandler = () => void;
 type ConnectHandler = () => void;
@@ -31,11 +31,11 @@ class PortManager {
       });
 
       this.isConnecting = false;
-      console.info('Port 连接完成');
+      console.info('Port connected');
       this.connectHandlers.forEach(handler => handler());
       return this.port;
     } catch (err) {
-      console.info('Port 连接失败:', err);
+      console.info('Port connection failed:', err);
       this.isConnecting = false;
       this.scheduleReconnect();
       return null;
@@ -85,5 +85,5 @@ class PortManager {
   }
 }
 
-// 导出单例
+// Export singleton
 export const portManager = new PortManager();

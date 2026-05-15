@@ -1,13 +1,13 @@
-// 配置 side panel 行为：点击扩展图标时打开 side panel
+// Configure side panel behavior: open side panel when clicking extension icon
 chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
 
 import { functionDefToCompletion } from '../libs/browser-api/base';
 import { createBrowserApi } from '../libs/browser-api';
-// 导入 fengari-web (不包含 js interop，避免 eval)
+// Import fengari-web (without js interop to avoid eval)
 import { executeAsyncUntilDone } from '../libs/async-executor';
 import { BrowserApi } from '../libs/browser-api/base';
 
-// 内联 message.ts 工具函数
+// Inline message.ts utility functions
 type MessageType =
   | { type: 'execute'; script: string; requestId: string; tabId: number }
   | { type: 'executeResult'; requestId: string; result: unknown; error?: string }
@@ -36,7 +36,7 @@ function wrapBrowserApi(api: BrowserApi) {
   return res;
 }
 
-// 维护来自 sidepanel 的 port
+// Maintain port from sidepanel
 let sidePanelPort: chrome.runtime.Port | null = null;
 
 chrome.runtime.onConnect.addListener((port) => {

@@ -1,4 +1,3 @@
-"use strict";
 // @ts-nocheck
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -293,10 +292,10 @@ const tojsCompletely = function(obj: any): any {
     return res;
   }
   else if (typeof obj === 'function') {
-    // 如果是一个 proxy, 可能是 lua 的 table 或 function， 需要特殊处理
+    // If it's a proxy, might be lua's table or function, needs special handling
     if (obj.isProxy === true) {
       const proxyObj = obj as ProxyFunction;
-      // 如果是table，转化为普通object
+      // If it's a table, convert to normal object
       if (proxyObj.type === LUA_TTABLE) {
         const res: any = {};
         for (const [k, v] of proxyObj) {
@@ -304,7 +303,7 @@ const tojsCompletely = function(obj: any): any {
           res[k] = v2;
         }
 
-        // 判断是否可以转化为数组
+        // Determine if it can be converted to array
         const keys = Object.keys(res);
         const sortedKeys = keys.map((v: string) => parseInt(v, 10)).sort((a, b) => a - b);
         let isArray = keys.every((v: string) => /^\d+$/.test(v)) &&
@@ -322,7 +321,7 @@ const tojsCompletely = function(obj: any): any {
     }
   }
 
-  // 其他类型暂时没啥意义
+  // Other types are temporarily meaningless
   return {};
 };
 

@@ -26,7 +26,7 @@ onMounted(() => {
       emit('update:modelValue', value);
       emit('change', value);
 
-      // 防抖保存
+      // Debounced save
       if (saveTimer !== null) {
         clearTimeout(saveTimer);
       }
@@ -47,7 +47,7 @@ onUnmounted(() => {
 watch(
   () => props.modelValue,
   (newValue) => {
-    // 跳过初始化时的设置，避免覆盖用户数据
+    // Skip initialization to avoid overwriting user data
     if (!isInitialized) return;
     if (editor && editor.getValue() !== newValue) {
       editor.setValue(newValue);

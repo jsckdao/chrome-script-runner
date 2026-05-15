@@ -8,51 +8,56 @@ import { autocompletion, CompletionContext } from '@codemirror/autocomplete';
 import { chromeAPICompletions } from './completions';
 import { tags as t } from '@lezer/highlight';
 
-// VS Code 风格黑暗主题代码高亮
+// VS Code style dark theme code highlighting
 const darkHighlightStyle = HighlightStyle.define([
-  { tag: t.keyword, color: '#569cd6' },                    // 关键字 - 蓝色
-  { tag: [t.name, t.deleted, t.character, t.propertyName], color: '#9cdcfe' },  // 名称/属性 - 浅蓝
-  { tag: [t.function(t.variableName), t.labelName], color: '#dcdcaa' },         // 函数 - 黄色
-  { tag: [t.color, t.constant(t.name), t.standard(t.name)], color: '#4ec9b0' },  // 常量 - 青色
-  { tag: [t.definition(t.name), t.separator], color: '#d4d4d4' },               // 定义/分隔符
-  { tag: [t.typeName, t.className, t.number, t.changed, t.annotation, t.modifier, t.self, t.namespace], color: '#4ec9b0' },  // 类型/类名 - 青色
-  { tag: [t.operator, t.operatorKeyword, t.url, t.escape, t.regexp, t.link, t.special(t.string)], color: '#d4d4d4' },  // 操作符
-  { tag: [t.meta, t.comment], color: '#6a9955' },                  // 注释 - 绿色
+  { tag: t.keyword, color: '#569cd6' },                    // keyword - blue
+  { tag: [t.name, t.deleted, t.character, t.propertyName], color: '#9cdcfe' },  // name/property - light blue
+  { tag: [t.function(t.variableName), t.labelName], color: '#dcdcaa' },         // function - yellow
+  { tag: [t.color, t.constant(t.name), t.standard(t.name)], color: '#4ec9b0' },  // constant - cyan
+  { tag: [t.definition(t.name), t.separator], color: '#d4d4d4' },               // definition/separator
+  { tag: [t.typeName, t.className, t.number, t.changed, t.annotation, t.modifier, t.self, t.namespace], color: '#4ec9b0' },  // type/class name - cyan
+  { tag: [t.operator, t.operatorKeyword, t.url, t.escape, t.regexp, t.link, t.special(t.string)], color: '#d4d4d4' },  // operator
+  { tag: [t.meta, t.comment], color: '#6a9955' },                  // comment - green
   { tag: t.strong, fontWeight: 'bold' },
   { tag: t.emphasis, fontStyle: 'italic' },
   { tag: t.strikethrough, textDecoration: 'line-through' },
   { tag: t.link, color: '#569cd6', textDecoration: 'underline' },
   { tag: t.heading, fontWeight: 'bold', color: '#569cd6' },
-  { tag: [t.atom, t.bool, t.special(t.variableName)], color: '#569cd6' },  // 布尔值/原子 - 蓝色
-  { tag: [t.processingInstruction, t.string, t.inserted], color: '#ce9178' },  // 字符串 - 橙色
-  { tag: t.invalid, color: '#f44747' },                        // 无效 - 红色
-  { tag: t.number, color: '#b5cea8' },                         // 数字 - 浅绿
+  { tag: [t.atom, t.bool, t.special(t.variableName)], color: '#569cd6' },  // boolean/atom - blue
+  { tag: [t.processingInstruction, t.string, t.inserted], color: '#ce9178' },  // string - orange
+  { tag: t.invalid, color: '#f44747' },                        // invalid - red
+  { tag: t.number, color: '#b5cea8' },                         // number - light green
 ]);
 
-// Emacs 风格快捷键
+// Emacs style keybindings
 const emacsKeymap = keymap.of([
-  // 光标移动
+  // Cursor movement
   { key: 'C-a', run: cursorLineStart },
   { key: 'C-e', run: cursorLineEnd },
   { key: 'C-f', run: cursorCharRight },
   { key: 'C-b', run: cursorCharLeft },
   { key: 'C-n', run: cursorLineDown },
   { key: 'C-p', run: cursorLineUp },
-  // 单词移动 (M-f, M-b)
+  // Word movement (M-f, M-b)
   { key: 'Alt-f', run: cursorSubwordForward },
   { key: 'Alt-b', run: cursorSubwordBackward },
-  // 删除
+  // Delete
   { key: 'C-k', run: deleteLine },
-  // 注释 (M-;)
+  // Comment (M-;)
   { key: 'Alt-;', run: toggleComment },
 ]);
 
-const exampleCode = `-- 这是一个示例 Lua 脚本
+export const exampleCode = `
+-- Example script
 
--- 这里是入口函数
+-- This is the main function
 function main()
-  log.info('Hello world!') -- 使用提供的 log API 输出日志
-  log.error('This is an error message') -- 输出错误日志
+  -- log
+  log.info('Hello World')
+  -- Open new tab
+  local tab = browser.openTab('https://www.google.com/')
+  -- Input something
+  browser.input(tab.id, 'textarea', 'Chrome Script Runner')
   return 100
 end
 `
@@ -69,7 +74,7 @@ export class Editor {
   }
 
   private setupTabIntercept(): void {
-    // 拦截 Tab 键，防止焦点丢失
+    // Intercept Tab key to prevent focus loss
     this.container.addEventListener('keydown', (e: KeyboardEvent) => {
       if (e.key === 'Tab') {
         e.preventDefault();
@@ -107,7 +112,7 @@ export class Editor {
     ];
 
     const state = EditorState.create({
-      doc: this.getDefaultCode(),
+      doc: '',
       extensions,
     });
 
@@ -115,10 +120,6 @@ export class Editor {
       state,
       parent: this.container,
     });
-  }
-
-  private getDefaultCode(): string {
-    return exampleCode;
   }
 
   getValue(): string {

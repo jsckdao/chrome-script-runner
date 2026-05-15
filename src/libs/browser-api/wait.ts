@@ -4,9 +4,9 @@ import { defineAsyncFunction } from "./base";
 
 export default defineAsyncFunction({
   name: 'wait',
-  description: '等待指定的秒数',
+  description: 'Wait for the specified number of seconds',
   params: z.tuple([
-    z.number().nonnegative().describe('要等待的秒数')
+    z.number().nonnegative().describe('Number of seconds to wait')
   ]),
   execute: async ([seconds]) => {
     return await new Promise(resolve => setTimeout(resolve, seconds * 1000));

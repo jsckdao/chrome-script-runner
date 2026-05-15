@@ -16,10 +16,10 @@ async function sendToContentScript(tabId: number, type: string, payload: any): P
 
 export default defineAsyncFunction({
   name: 'querySelector',
-  description: '在指定标签页中查询元素信息',
+  description: 'Query element information in the specified tab',
   params: z.tuple([
-    z.number().describe('标签页 ID'),
-    z.string().describe('CSS 选择器')
+    z.number().describe('Tab ID'),
+    z.string().describe('CSS selector')
   ]),
   execute: async ([tabId, selector]) => {
     const result = await sendToContentScript(tabId, 'querySelector', { selector });

@@ -3,9 +3,9 @@ import { defineAsyncFunction } from "./base";
 
 export default defineAsyncFunction({
   name: 'httpGet',
-  description: '发送 HTTP GET 请求并返回结果文本',
+  description: 'Send HTTP GET request and return result text',
   params: z.tuple([
-    z.string().describe('请求 URL')
+    z.string().describe('Request URL')
   ]),
   execute: async ([url]) => {
     const response = await fetch(url, {

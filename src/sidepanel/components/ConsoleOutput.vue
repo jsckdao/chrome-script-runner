@@ -65,7 +65,7 @@ watch(
     class="flex-1 overflow-y-auto px-3 py-2 font-mono text-xs leading-relaxed"
   >
     <div v-if="entries.length === 0" class="text-[#606060] italic">
-      控制台暂无输出
+      Console is empty
     </div>
     <div
       v-for="entry in entries"

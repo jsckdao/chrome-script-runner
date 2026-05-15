@@ -3,16 +3,16 @@ import { defineAsyncFunction } from "./base";
 
 export default defineAsyncFunction({
   name: 'httpPost',
-  description: '发送 HTTP POST 请求并返回结果文本',
+  description: 'Send HTTP POST request and return result text',
   params: z.tuple([
-    z.string().describe('请求 URL'),
-    z.string().describe('请求体文本'),
+    z.string().describe('Request URL'),
+    z.string().describe('Request body text'),
     z.object({
-      headers: z.record(z.string(), z.string()).optional().describe('请求头信息'),
-      timeout: z.number().default(5000).describe('请求超时时间（毫秒）'),
-      retryCount: z.number().default(3).describe('重试次数'),
-      returnType: z.enum(['text', 'json']).default('text').describe('返回结果的格式'),
-    }).optional().describe('其他配置信息')
+      headers: z.record(z.string(), z.string()).optional().describe('Request headers'),
+      timeout: z.number().default(5000).describe('Request timeout in milliseconds'),
+      retryCount: z.number().default(3).describe('Number of retries'),
+      returnType: z.enum(['text', 'json']).default('text').describe('Format of the returned result'),
+    }).optional().describe('Additional configuration options')
   ]),
   execute: async ([url, bodyText, options]) => {
     const { headers = {}, timeout = 5000, retryCount = 3, returnType = 'text' } = options || {};

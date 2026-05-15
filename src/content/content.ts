@@ -1,5 +1,5 @@
-// Content Script - 作为桥梁接收来自 background 的消息
-// 但实际脚本执行逻辑在 background.ts 的 sandbox 函数中
+// Content Script - acts as a bridge to receive messages from background
+// Actual script execution logic is in sandbox function in background.ts
 
 const defaultAttrs = [
   'id', 'className',  'href', 'src', 'style', 'alt', 'title', 

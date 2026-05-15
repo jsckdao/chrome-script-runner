@@ -3,7 +3,7 @@ import { defineAsyncFunction } from "./base";
 
 export default defineAsyncFunction({
   name: 'getCurrentTab',
-  description: '获取当前用户正在浏览的标签页的信息，包括标题、URL、ID 等',
+  description: 'Get information about the tab the user is currently browsing, including title, URL, ID, etc.',
   params: z.tuple([]),
   execute: async () => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });

@@ -96,7 +96,7 @@ export function getParamDescriptions(
 
   const shape = (schema as any).shape;
 
-  // 元组的 shape 是数组，用索引作为 key
+  // The shape of a tuple is an array, using index as key
   shape.forEach((field: any, index: number) => {
     const zodField = field as any;
     result[String(index)] = {

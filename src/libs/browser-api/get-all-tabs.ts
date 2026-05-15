@@ -3,7 +3,7 @@ import { defineAsyncFunction } from "./base";
 
 export default defineAsyncFunction({
   name: 'getAllTabs',
-  description: '获取当前 sidepanel 所在的 window 下的所有标签页信息',
+  description: 'Get all tab information in the current window where the sidepanel is located',
   params: z.tuple([]),
   execute: async () => {
     const tabs = await chrome.tabs.query({ currentWindow: true });

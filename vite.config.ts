@@ -24,7 +24,7 @@ export default defineConfig({
   root: resolve(__dirname, 'src'),
   plugins: [vue(), tailwindcss(), copyManifestPlugin()],
   define: {
-    // 强制 fengari 使用浏览器模式 - process 检测
+    // Force fengari to use browser mode - process detection
     'process.env.FENGARICONF': JSON.stringify('{"process":false}'),
   },
   build: {

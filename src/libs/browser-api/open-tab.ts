@@ -3,13 +3,13 @@ import { defineAsyncFunction } from "./base";
 
 export default defineAsyncFunction({
   name: 'openTab',
-  description: '打开一个新的标签页并导航到指定页面，返回 tab 信息',
+  description: 'Open a new tab and navigate to the specified page, returns tab information',
   params: z.tuple([
-    z.string().describe('目标 URL')
+    z.string().describe('Target URL')
   ]),
   execute: async ([url]) => {
     return new Promise((resolve, reject) => {
-      // 监听标签页加载完成
+      // Listen for tab load completion
       const onUpdated = (tabId: number, changeInfo: { status?: string }) => {
         if (changeInfo.status === 'complete') {
           chrome.tabs.onUpdated.removeListener(onUpdated);
@@ -27,11 +27,11 @@ export default defineAsyncFunction({
 
       chrome.tabs.onUpdated.addListener(onUpdated);
 
-      // 创建标签页
+      // Create tab
       chrome.tabs.create({ url }, (tab) => {
         if (!tab || chrome.runtime.lastError) {
           chrome.tabs.onUpdated.removeListener(onUpdated);
-          reject(new Error(chrome.runtime.lastError?.message || '创建标签页失败'));
+          reject(new Error(chrome.runtime.lastError?.message || 'Failed to create tab'));
           return;
         }
       });

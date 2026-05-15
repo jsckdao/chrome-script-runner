@@ -14,9 +14,8 @@ import { stringifyJSON } from './stringify-json';
 import { parseJSON } from './parse-json';
 import openTab from './open-tab';
 import closeTab from './close-tab';
-import llmGenerate from './llm-generate';
 
-// 所有需要暴露到 Lua 环境中的方法都在这里注册
+// All methods that need to be exposed to the Lua environment are registered here
 const browserApiFunctions: FunctionDef[] = [
   wait,
   getCurrentTab,
@@ -33,11 +32,10 @@ const browserApiFunctions: FunctionDef[] = [
   httpPost,
   stringifyJSON,
   parseJSON,
-  llmGenerate,
 ]
 
 /**
- * 创建浏览器 API 对象，包含所有需要暴露到 Lua 环境中的方法
+ * Create a browser API object containing all methods to be exposed to the Lua environment
  * @returns
  */
 export function createBrowserApi(): BrowserApi {
